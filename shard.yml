@@ -1,0 +1,17 @@
+name: astv
+version: 0.1.0
+
+authors:
+  - kojix2 <2xijok@gmail.com>
+
+targets:
+  astv:
+    main: src/astv.cr
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+
+crystal: '>= 1.18.2'
+
+license: MIT

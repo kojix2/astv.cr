@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crystal AST Tree Viewer</title>
+  <meta property="og:title" content="Crystal AST Tree Viewer">
+  <meta property="og:description" content="Visualize Crystal ASTs in the browser with a compact tree and rich details.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ko1.github.io/astv/">
+  <meta property="og:see_also" content="https://github.com/ko1/astv">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/crystal.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --panel: #ffffff;
+      --ink: #1e1d1b;
+      --accent: #d0552f;
+      --muted: #6f6a62;
+      --line: #d9d1c6;
+      --ok: #1f7a4f;
+      --bad: #a6362a;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --display: "Cormorant Garamond", "Georgia", serif;
+      --sans: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(208,85,47,0.08), transparent 40%),
+        radial-gradient(circle at 90% 20%, rgba(31,122,79,0.08), transparent 45%),
+        linear-gradient(180deg, #f8f5ef 0%, #efe9df 100%);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: 32px;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 12px 32px rgba(30, 29, 27, 0.08);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: #f6f1e7;
+      color: var(--ink);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      border: 1px solid var(--line);
+      background: #f6f1e7;
+      color: var(--ink);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .text-view {
+      font-family: var(--mono);
+      font-size: 12px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-self: stretch;
+    }
+
+    .column .panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+    }
+
+    .wrap > .panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .site-footer {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 6px;
+      border-top: 1px solid var(--line);
+      margin-top: 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 320px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 13px;
+      background: #fbfaf7;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .code-editor {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 320px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfaf7;
+      overflow: hidden;
+    }
+
+    .code-editor .loc-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .code-editor .loc-block {
+      position: absolute;
+      background: rgba(208, 85, 47, 0.18);
+      border: 1px solid rgba(208, 85, 47, 0.35);
+      border-radius: 4px;
+    }
+
+    .code-editor textarea,
+    .code-editor pre {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px;
+      margin: 0;
+      border: none;
+      outline: none;
+      width: 100%;
+      height: 100%;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .code-editor pre {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      color: var(--ink);
+      z-index: 1;
+    }
+
+    .code-editor textarea {
+      position: relative;
+      resize: vertical;
+      background: transparent;
+      color: var(--ink);
+      caret-color: var(--ink);
+      z-index: 3;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    select {
+      border: 1px solid var(--line);
+      background: #f6f1e7;
+      color: var(--ink);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(208,85,47,0.25);
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.bad { color: var(--bad); }
+
+    .tree {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .tree ul {
+      list-style: none;
+      padding-left: 18px;
+      margin: 6px 0;
+    }
+
+    .tree li {
+      margin: 6px 0;
+      position: relative;
+      padding-left: 12px;
+    }
+
+    .tree li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 10px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .tree li::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: -10px;
+      height: calc(100% + 10px);
+      border-left: 1px dashed var(--line);
+    }
+
+    .tree li:last-child::after {
+      height: 22px;
+    }
+
+    .tree > ul > li::after {
+      top: 12px;
+      height: 0;
+      border-left: none;
+    }
+
+    .node {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3eee4;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .node .type { color: var(--muted); font-size: 11px; }
+    .node .value { color: #1f2a44; }
+    .node .details { display: none; color: #2b2b2b; font-size: 12px; white-space: pre-line; }
+
+    .rel {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+    }
+
+    .node.expanded {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 10px;
+      background: #efe7d8;
+      box-shadow: 0 8px 18px rgba(30, 29, 27, 0.12);
+    }
+
+    .node.expanded .details { display: block; }
+
+    .node.scope-node {
+      border: 1px solid var(--accent);
+      background: #f9e6dd;
+      box-shadow: 0 0 0 2px rgba(208, 85, 47, 0.2);
+    }
+
+    .footer-status {
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Crystal AST Tree Viewer</h1>
+        <p class="sub">Visualize Crystal syntax as a tree</p>
+      </div>
+      <p class="sub">Parse and render</p>
+    </header>
+
+    <div class="column">
+      <section class="panel">
+        <label for="rubyInput">Crystal Input</label>
+        <div class="code-editor">
+          <div id="rubyLocLayer" class="loc-layer"></div>
+          <pre id="rubyHighlight" class="hljs"></pre>
+          <textarea id="rubyInput" spellcheck="false">class User
+  getter name, children
+
+  def initialize(@name : String, @children : Array(String) = [] of String)
+  end
+end
+</textarea>
+        </div>
+        <div class="controls">
+          <button id="parseBtn" type="button" title="Ctrl/Cmd+Enter">Render</button>
+          <button id="copyUrlBtn" type="button">Copy URL</button>
+          <span id="rubyActionStatus" class="status">Idle</span>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="treeTab" type="button">Tree</button>
+        <button class="tab-btn" data-tab="textTab" type="button">Text</button>
+        <button class="tab-btn" data-tab="jsonTab" type="button">JSON</button>
+        <button class="tab-btn" data-tab="tokenTab" type="button">Tokens</button>
+      </div>
+      <div id="treeTab" class="tab-panel active">
+        <div class="panel-header">
+          <div class="panel-actions">
+            <button id="expandAllBtn" class="action-btn" type="button">Expand All</button>
+            <button id="collapseAllBtn" class="action-btn" type="button">Collapse All</button>
+          </div>
+        </div>
+        <div id="tree" class="tree">Parsed output will appear here.</div>
+      </div>
+      <div id="textTab" class="tab-panel">
+        <div class="panel-header">
+          <div class="panel-actions">
+            <button id="copyTextBtn" class="action-btn" type="button">Copy</button>
+          </div>
+        </div>
+        <div id="textView" class="text-view">Text output will appear here.</div>
+      </div>
+      <div id="jsonTab" class="tab-panel">
+        <div class="panel-header">
+          <div class="panel-actions">
+            <button id="copyJsonBtn" class="action-btn" type="button">Copy</button>
+          </div>
+        </div>
+        <div id="jsonView" class="text-view">JSON output will appear here.</div>
+      </div>
+      <div id="tokenTab" class="tab-panel">
+        <div class="panel-header">
+          <div class="panel-actions">
+            <button id="copyTokenBtn" class="action-btn" type="button">Copy</button>
+          </div>
+        </div>
+        <div id="tokenView" class="text-view">Token output will appear here.</div>
+      </div>
+    </section>
+    <footer class="site-footer">
+      <div class="footer-status">
+        <span id="rubyStatus" class="status">Server loading</span>
+      </div>
+      <div class="footer-links">
+        <span>Copyright (c) 2026 Koichi Sasada</span>
+        <span><a href='https://github.com/ko1/astv'>(Repository)</a></span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const tree = document.getElementById('tree');
+    const textView = document.getElementById('textView');
+    const jsonView = document.getElementById('jsonView');
+    const tokenView = document.getElementById('tokenView');
+    const rubyInput = document.getElementById('rubyInput');
+    const parseBtn = document.getElementById('parseBtn');
+    const copyUrlBtn = document.getElementById('copyUrlBtn');
+    const rubyActionStatus = document.getElementById('rubyActionStatus');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+    const copyJsonBtn = document.getElementById('copyJsonBtn');
+    const copyTokenBtn = document.getElementById('copyTokenBtn');
+    const rubyHighlight = document.getElementById('rubyHighlight');
+    const rubyLocLayer = document.getElementById('rubyLocLayer');
+    const tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    const rubyStatus = document.getElementById('rubyStatus');
+
+    let currentLoc = null;
+
+    function typeOf(value) {
+      if (value === null) return 'null';
+      if (Array.isArray(value)) return 'array';
+      return typeof value;
+    }
+
+    function isNodeObject(value) {
+      return !!value && typeof value === 'object' && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, 'type');
+    }
+
+    function isArrayOfNodeObjects(value) {
+      if (!Array.isArray(value)) return false;
+      if (value.length === 0) return false;
+      return value.every(item => isNodeObject(item));
+    }
+
+    function extractLocation(obj) {
+      if (!obj || typeof obj !== 'object') return null;
+      const loc = obj.location;
+      if (!loc || typeof loc !== 'object') return null;
+      const required = ['start_line', 'start_column', 'end_line', 'end_column'];
+      for (const key of required) {
+        if (!Object.prototype.hasOwnProperty.call(loc, key)) return null;
+      }
+      return {
+        startLine: Number(loc.start_line),
+        startColumn: Number(loc.start_column) + 1,
+        endLine: Number(loc.end_line),
+        endColumn: Number(loc.end_column)
+      };
+    }
+
+    function formatTypeName(typeName) {
+      if (typeof typeName !== 'string') return String(typeName);
+      return typeName
+        .split('_')
+        .filter(Boolean)
+        .map(part => part[0].toUpperCase() + part.slice(1))
+        .join('');
+    }
+
+    function hasNodeChildren(obj) {
+      return Object.keys(obj).some(key => {
+        if (key === 'value') return false;
+        const v = obj[key];
+        const t = typeOf(v);
+        if (t === 'array') return isArrayOfNodeObjects(v);
+        if (t === 'object') return isNodeObject(v);
+        return false;
+      });
+    }
+
+    function representativeValue(obj) {
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return '';
+      if (!Object.prototype.hasOwnProperty.call(obj, 'type')) return '';
+      const typeValue = obj.type;
+      let shownType = '';
+      if (typeof typeValue === 'string') shownType = formatTypeName(typeValue);
+      else if (typeValue === null) shownType = 'null';
+      else shownType = String(typeValue);
+
+      if (Object.prototype.hasOwnProperty.call(obj, 'name')) {
+        shownType = `${shownType} (${obj.name})`;
+      }
+      else if (Object.prototype.hasOwnProperty.call(obj, 'value')) {
+        shownType = `${shownType} (value: ${obj.value})`;
+      }
+      else if (Object.prototype.hasOwnProperty.call(obj, 'unescaped')) {
+        shownType = `${shownType} (unescaped: ${formatDetailValue(obj.unescaped)})`;
+      }
+      else if (Array.isArray(obj.children_values) && obj.children_values.length > 0) {
+        shownType = `${shownType} (${formatDetailValue(obj.children_values[0])})`;
+      }
+
+      return { key: 'type', value: shownType };
+    }
+
+    function formatDetailValue(value) {
+      const t = typeOf(value);
+      if (t === 'string') return `"${value}"`;
+      if (t === 'number' || t === 'boolean') return String(value);
+      if (t === 'null') return 'null';
+      if (t === 'array') return JSON.stringify(value);
+      if (t === 'object') {
+        if (
+          Object.prototype.hasOwnProperty.call(value, 'start_line') &&
+          Object.prototype.hasOwnProperty.call(value, 'start_column') &&
+          Object.prototype.hasOwnProperty.call(value, 'end_line') &&
+          Object.prototype.hasOwnProperty.call(value, 'end_column')
+        ) {
+          const startCol = Number(value.start_column) + 1;
+          const endCol = Number(value.end_column);
+          return `${value.start_line}:${startCol}-${value.end_line}:${endCol}`;
+        }
+        try {
+          return JSON.stringify(value);
+        } catch (_) {
+          return '[Object]';
+        }
+      }
+      return String(value);
+    }
+
+    function hoverDetails(obj) {
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return '';
+      const keys = Object.keys(obj);
+      const lines = [];
+      keys.forEach(key => {
+        const v = obj[key];
+        const t = typeOf(v);
+        if (t === 'array') {
+          if (isArrayOfNodeObjects(v)) return;
+          lines.push(`${key}: ${formatDetailValue(v)}`);
+          return;
+        }
+        if (t === 'object' && isNodeObject(v)) return;
+        lines.push(`${key}: ${formatDetailValue(v)}`);
+      });
+      return lines.join('\n');
+    }
+
+    function buildTree(value, label = 'root') {
+      const t = typeOf(value);
+      const li = document.createElement('li');
+      const header = document.createElement('span');
+      header.className = 'node';
+      const rep = t === 'object' ? representativeValue(value) : '';
+      const details = t === 'object' ? hoverDetails(value) : '';
+      if (details) header.title = details;
+      if (details) header.dataset.details = details;
+      if (t === 'object' && value && Array.isArray(value.locals)) {
+        header.classList.add('scope-node');
+      }
+      if (t === 'object') {
+        const loc = extractLocation(value);
+        if (loc) {
+          header.dataset.loc = `${loc.startLine},${loc.startColumn},${loc.endLine},${loc.endColumn}`;
+          li.dataset.loc = header.dataset.loc;
+        }
+      }
+      if (rep && rep.value) {
+        const repSpan = document.createElement('span');
+        repSpan.className = 'value';
+        repSpan.textContent = rep.value;
+        header.appendChild(repSpan);
+      }
+      if (details) {
+        const detailSpan = document.createElement('span');
+        detailSpan.className = 'details';
+        detailSpan.textContent = details;
+        header.appendChild(detailSpan);
+      }
+      li.appendChild(header);
+      const relation = document.createElement('span');
+      relation.className = 'rel';
+      if (t === 'array') {
+        relation.textContent = `${label} (size: ${value.length})`;
+      } else {
+        relation.textContent = label;
+      }
+      li.insertBefore(relation, header);
+
+      if (t === 'object') {
+        const keys = Object.keys(value);
+        if (keys.length) {
+          const ul = document.createElement('ul');
+          keys.forEach(key => {
+            const child = value[key];
+            const childType = typeOf(child);
+            if (childType === 'array' && isArrayOfNodeObjects(child)) {
+              ul.appendChild(buildTree(child, key));
+              return;
+            }
+            if (childType === 'object' && isNodeObject(child)) {
+              ul.appendChild(buildTree(child, key));
+            }
+          });
+          li.appendChild(ul);
+        }
+      } else if (t === 'array') {
+        if (value.length) {
+          const ul = document.createElement('ul');
+          value.forEach((item, index) => ul.appendChild(buildTree(item, `[${index}]`)));
+          li.appendChild(ul);
+        }
+      }
+
+      return li;
+    }
+
+    function renderTree(json) {
+      tree.innerHTML = '';
+      jsonView.textContent = JSON.stringify(json, null, 2);
+      const ul = document.createElement('ul');
+      ul.appendChild(buildTree(json, 'root'));
+      tree.appendChild(ul);
+    }
+
+    function getEditorMetrics() {
+      const style = window.getComputedStyle(rubyInput);
+      const font = `${style.fontSize} ${style.fontFamily}`;
+      const canvas = getEditorMetrics._canvas || (getEditorMetrics._canvas = document.createElement('canvas'));
+      const ctx = canvas.getContext('2d');
+      ctx.font = font;
+      const charWidth = ctx.measureText('M').width;
+      const lineHeight = parseFloat(style.lineHeight);
+      const paddingLeft = parseFloat(style.paddingLeft) || 0;
+      const paddingTop = parseFloat(style.paddingTop) || 0;
+      return { charWidth, lineHeight, paddingLeft, paddingTop };
+    }
+
+    function renderLocationHighlight(loc) {
+      if (!rubyLocLayer) return;
+      rubyLocLayer.innerHTML = '';
+      if (!loc) return;
+      const { charWidth, lineHeight, paddingLeft, paddingTop } = getEditorMetrics();
+      const lines = rubyInput.value.split('\n');
+      const startLine = Math.max(1, loc.startLine);
+      const endLine = Math.max(startLine, loc.endLine);
+      for (let line = startLine; line <= endLine; line++) {
+        const text = lines[line - 1] || '';
+        const startCol = line === startLine ? Math.max(1, loc.startColumn) : 1;
+        const endColRaw = line === endLine ? Math.max(startCol, loc.endColumn) : text.length + 1;
+        const endCol = Math.max(startCol, endColRaw);
+        const left = paddingLeft + (startCol - 1) * charWidth - rubyInput.scrollLeft;
+        const width = Math.max(2, (endCol - startCol + 1) * charWidth);
+        const top = paddingTop + (line - 1) * lineHeight - rubyInput.scrollTop;
+        const block = document.createElement('div');
+        block.className = 'loc-block';
+        block.style.left = `${left}px`;
+        block.style.top = `${top}px`;
+        block.style.width = `${width}px`;
+        block.style.height = `${lineHeight}px`;
+        rubyLocLayer.appendChild(block);
+      }
+    }
+
+    function updateRubyHighlight() {
+      if (!rubyHighlight) return;
+      const code = rubyInput.value || '';
+      if (!window.hljs) {
+        rubyHighlight.textContent = code;
+        rubyInput.style.color = 'var(--ink)';
+        return;
+      }
+      rubyHighlight.innerHTML = hljs.highlight(code, { language: 'crystal' }).value;
+      rubyInput.style.color = 'transparent';
+    }
+
+    async function copyOutput(text) {
+      try {
+        await navigator.clipboard.writeText(text || '');
+      } catch (_) {
+        window.alert('Failed to copy to clipboard.');
+      }
+    }
+
+    function renderErrorState(message) {
+      tree.textContent = message;
+      textView.textContent = message;
+      jsonView.textContent = '';
+      if (tokenView) tokenView.textContent = '';
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        if (!target) return;
+        tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+        tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === target));
+      });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const programParam = params.get('p');
+    if (programParam !== null) {
+      rubyInput.value = programParam;
+    }
+
+    rubyInput.addEventListener('input', updateRubyHighlight);
+    rubyInput.addEventListener('input', () => {
+      if (currentLoc) renderLocationHighlight(currentLoc);
+    });
+    rubyInput.addEventListener('scroll', () => {
+      rubyHighlight.scrollTop = rubyInput.scrollTop;
+      rubyHighlight.scrollLeft = rubyInput.scrollLeft;
+      if (currentLoc) renderLocationHighlight(currentLoc);
+    });
+    rubyInput.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        parseBtn.click();
+      }
+    });
+    updateRubyHighlight();
+
+    copyUrlBtn.addEventListener('click', async () => {
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const params = new URLSearchParams();
+      params.set('p', rubyInput.value || '');
+      const url = `${baseUrl}?${params.toString()}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        rubyActionStatus.textContent = 'URL copied';
+        rubyActionStatus.className = 'status ok';
+      } catch (_) {
+        rubyActionStatus.textContent = 'Failed to copy URL';
+        rubyActionStatus.className = 'status bad';
+      }
+    });
+
+    copyTextBtn.addEventListener('click', () => {
+      copyOutput(textView.textContent || '');
+    });
+
+    copyJsonBtn.addEventListener('click', () => {
+      copyOutput(jsonView.textContent || '');
+    });
+
+    copyTokenBtn.addEventListener('click', () => {
+      copyOutput(tokenView.textContent || '');
+    });
+
+    expandAllBtn.addEventListener('click', () => {
+      tree.querySelectorAll('.node[data-details]').forEach(node => {
+        node.classList.add('expanded');
+      });
+    });
+
+    collapseAllBtn.addEventListener('click', () => {
+      tree.querySelectorAll('.node.expanded').forEach(node => {
+        node.classList.remove('expanded');
+      });
+    });
+
+    tree.addEventListener('click', (event) => {
+      const target = event.target.closest('.node');
+      if (!target || !tree.contains(target)) return;
+      if (!target.dataset.details) return;
+      const selection = window.getSelection && window.getSelection().toString();
+      if (selection && selection.length > 0) return;
+      target.classList.toggle('expanded');
+    });
+
+    tree.addEventListener('mouseover', (event) => {
+      const row = event.target.closest('li');
+      if (!row || !tree.contains(row)) return;
+      const locText = row.dataset.loc;
+      if (!locText) return;
+      const parts = locText.split(',').map(n => Number(n));
+      if (parts.length !== 4) return;
+      currentLoc = {
+        startLine: parts[0],
+        startColumn: parts[1],
+        endLine: parts[2],
+        endColumn: parts[3]
+      };
+      renderLocationHighlight(currentLoc);
+    });
+
+    tree.addEventListener('mouseout', (event) => {
+      const row = event.target.closest('li');
+      if (!row || !tree.contains(row)) return;
+      const related = event.relatedTarget && event.relatedTarget.closest && event.relatedTarget.closest('li');
+      if (related === row) return;
+      currentLoc = null;
+      renderLocationHighlight(null);
+    });
+
+    async function postJson(url, payload) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed: ${res.status}`);
+      }
+      return res.json();
+    }
+
+    async function parseAndRender() {
+      const source = rubyInput.value || '';
+      rubyActionStatus.textContent = 'Parsing...';
+      rubyActionStatus.className = 'status';
+      try {
+        const [parseResult, lexResult] = await Promise.all([
+          postJson('/api/parse', { code: source }),
+          postJson('/api/lex', { code: source })
+        ]);
+
+        if (parseResult && parseResult.ast) {
+          renderTree(parseResult.ast);
+          textView.textContent = parseResult.text || '';
+          rubyActionStatus.textContent = parseResult.errors && parseResult.errors.length > 0
+            ? 'Parsed with errors'
+            : 'Parsed';
+          rubyActionStatus.className = parseResult.errors && parseResult.errors.length > 0
+            ? 'status bad'
+            : 'status ok';
+        } else if (parseResult && parseResult.errors && parseResult.errors.length > 0) {
+          renderErrorState(parseResult.errors[0].message || 'Parse error');
+          rubyActionStatus.textContent = 'Parse error';
+          rubyActionStatus.className = 'status bad';
+        } else {
+          renderErrorState('No AST returned.');
+          rubyActionStatus.textContent = 'No AST returned';
+          rubyActionStatus.className = 'status bad';
+        }
+
+        if (lexResult && tokenView) {
+          tokenView.textContent = lexResult.text || '';
+        }
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        renderErrorState(message);
+        rubyActionStatus.textContent = 'Request failed';
+        rubyActionStatus.className = 'status bad';
+      }
+    }
+
+    parseBtn.addEventListener('click', parseAndRender);
+
+    if (rubyStatus) {
+      rubyStatus.textContent = 'Server ready';
+      rubyStatus.className = 'status ok';
+    }
+
+    if ((rubyInput.value || '').trim() !== '') {
+      parseAndRender();
+    }
+  </script>
+</body>
+</html>

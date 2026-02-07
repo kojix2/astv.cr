@@ -1,0 +1,41 @@
+FROM crystallang/crystal:1-alpine AS crystal-builder
+
+WORKDIR /app
+
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    g++ \
+    make \
+    libc-dev \
+    openssl-dev \
+    zlib-dev \
+    pcre2-dev
+
+COPY shard.yml shard.lock ./
+RUN shards install --production
+
+COPY src ./src
+COPY astv ./astv
+COPY src/views ./src/views
+
+RUN shards build --release --no-debug -s
+
+FROM alpine:3.20
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    libgcc \
+    libstdc++ \
+    libssl3 \
+    zlib \
+    pcre2
+
+COPY --from=crystal-builder /app/bin/astv /app/astv
+COPY --from=crystal-builder /app/src/views /app/src/views
+COPY --from=crystal-builder /app/astv /app/astv
+
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["/app/astv"]
