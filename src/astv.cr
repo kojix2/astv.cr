@@ -155,7 +155,8 @@ module Astv
   end
 
   def error_response(ex : Exception, source : String)
-    %({"source":#{source.to_json},"text":"","ast":null,"errors":[{"message":#{ex.class.name.to_json},"kind":#{ex.class.name.to_json}}]})
+    message = ex.message || ex.class.name
+    %({"source":#{source.to_json},"text":"","ast":null,"errors":[{"message":#{message.to_json},"kind":#{ex.class.name.to_json}}]})
   end
 
   def token_to_tsv(token : Crystal::Token)
