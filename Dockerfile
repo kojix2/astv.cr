@@ -19,19 +19,11 @@ COPY src/views ./src/views
 
 RUN shards build --release --no-debug -s
 
-FROM debian:bookworm-slim
+FROM crystallang/crystal:1-alpine
 
 WORKDIR /app
 
-RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update \
-    && apt-get install -y --no-install-recommends \
-    libgc1 \
-    libssl3 \
-    zlib1g \
-    libpcre2-8-0 \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd -m -s /usr/sbin/nologin app
+RUN adduser -D -H app
 
 COPY --from=crystal-builder /app/bin/astv /app/astv
 COPY --from=crystal-builder /app/src/views /app/src/views
