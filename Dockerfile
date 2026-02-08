@@ -29,13 +29,19 @@ RUN apk add --no-cache \
     libstdc++ \
     libssl3 \
     zlib \
-    pcre2
+    pcre2 \
+    && adduser -D -H app
 
 COPY --from=crystal-builder /app/bin/astv /app/astv
 COPY --from=crystal-builder /app/src/views /app/src/views
 COPY --from=crystal-builder /app/astv /app/astv
 
+RUN chown -R app:app /app
+
+USER app
+
 ENV PORT=3000
+ENV KEMAL_ENV=production
 EXPOSE 3000
 
 CMD ["/app/astv"]

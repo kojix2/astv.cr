@@ -3,9 +3,9 @@ require "kemal"
 require "compiler/crystal/syntax"
 
 module Astv
-  VERSION = "0.1.0"
-  MAX_INPUT_BYTES = 1_000_000
-  REQUEST_TIMEOUT_SECONDS = 10
+  VERSION                 = "0.1.0"
+  MAX_INPUT_BYTES         = 1_000_000
+  REQUEST_TIMEOUT_SECONDS =        10
 
   class RequestTooLarge < Exception
   end
@@ -18,6 +18,10 @@ module Astv
   def run
     Kemal.config.public_folder = "astv"
     Kemal.config.serve_static = false
+    Kemal.config.host = "0.0.0.0"
+    if port = ENV["PORT"]?
+      Kemal.config.port = port.to_i
+    end
 
     get "/" do
       render "src/views/index.ecr"
