@@ -18,10 +18,6 @@ module Astv
   def run
     Kemal.config.public_folder = "astv"
     Kemal.config.serve_static = false
-    Kemal.config.host = "0.0.0.0"
-    if port = ENV["PORT"]?
-      Kemal.config.port = port.to_i
-    end
 
     get "/" do
       render "src/views/index.ecr"
@@ -138,10 +134,11 @@ module Astv
   def with_timeout(seconds : Int32, &block : -> String)
     result_channel = Channel(String).new(1)
     error_channel = Channel(Exception).new(1)
+    operation = block
 
     spawn do
       begin
-        result_channel.send(yield)
+        result_channel.send(operation.call)
       rescue ex
         error_channel.send(ex)
       end
@@ -152,7 +149,7 @@ module Astv
       result
     when ex = error_channel.receive
       raise ex
-    when timeout(seconds)
+    when timeout(seconds.seconds)
       raise RequestTimeout.new("request timeout")
     end
   end

@@ -15,7 +15,6 @@ COPY shard.yml shard.lock ./
 RUN shards install --production
 
 COPY src ./src
-COPY astv ./astv
 COPY src/views ./src/views
 
 RUN shards build --release --no-debug -s
@@ -34,7 +33,6 @@ RUN apk add --no-cache \
 
 COPY --from=crystal-builder /app/bin/astv /app/astv
 COPY --from=crystal-builder /app/src/views /app/src/views
-COPY --from=crystal-builder /app/astv /app/astv
 
 RUN chown -R app:app /app
 
