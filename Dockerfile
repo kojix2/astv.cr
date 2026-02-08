@@ -19,17 +19,19 @@ COPY src/views ./src/views
 
 RUN shards build --release --no-debug -s
 
-FROM alpine:3.20
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
-RUN apk add --no-cache \
-    libgcc \
-    libstdc++ \
+RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update \
+    && apt-get install -y --no-install-recommends \
+    libgc1 \
     libssl3 \
-    zlib \
-    pcre2 \
-    && adduser -D -H app
+    zlib1g \
+    libpcre2-8-0 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m -s /usr/sbin/nologin app
 
 COPY --from=crystal-builder /app/bin/astv /app/astv
 COPY --from=crystal-builder /app/src/views /app/src/views
