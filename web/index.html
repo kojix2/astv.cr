@@ -347,6 +347,19 @@
       transition: background 120ms ease, box-shadow 120ms ease;
     }
 
+    .node.node-type-classdef { background: #efe2d2; border: 1px solid rgba(208,85,47,0.18); }
+    .node.node-type-moduledef { background: #efe2d2; border: 1px solid rgba(208,85,47,0.18); }
+    .node.node-type-def { background: #f3e8d8; border: 1px solid rgba(208,85,47,0.18); }
+    .node.node-type-if { background: #e9f0e3; border: 1px solid rgba(31,122,79,0.2); }
+    .node.node-type-call { background: #f1efe6; border: 1px solid rgba(111,106,98,0.18); }
+    .node.node-type-assign { background: #f7e6e1; border: 1px solid rgba(166,54,42,0.2); }
+    .node.node-type-stringliteral { background: #eef0f7; border: 1px solid rgba(63,82,146,0.2); }
+    .node.node-type-numberliteral { background: #eef0f7; border: 1px solid rgba(63,82,146,0.2); }
+    .node.node-type-var { background: #f3efe6; border: 1px solid rgba(111,106,98,0.16); }
+    .node.node-type-instancevar { background: #f3efe6; border: 1px solid rgba(111,106,98,0.16); }
+    .node.node-type-path { background: #f3efe6; border: 1px solid rgba(111,106,98,0.16); }
+    .node.node-type-require { background: #efe2d2; border: 1px solid rgba(208,85,47,0.18); }
+
     .node .type { color: var(--muted); font-size: 11px; }
     .node .value { color: #1f2a44; }
     .node .details { display: none; color: #2b2b2b; font-size: 12px; white-space: pre-line; }
@@ -626,6 +639,9 @@ end
       if (details) header.dataset.details = details;
       if (t === 'object' && value && Array.isArray(value.locals)) {
         header.classList.add('scope-node');
+      }
+      if (t === 'object' && value && typeof value.type === 'string') {
+        header.classList.add(`node-type-${value.type.toLowerCase()}`);
       }
       if (t === 'object') {
         const loc = extractLocation(value);
