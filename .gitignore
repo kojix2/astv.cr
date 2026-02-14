@@ -3,3 +3,7 @@
 /bin/
 /.shards/
 *.dwarf
+web/*.wasm
+wasm32-wasi-sysroot/
+.cache/
+llvm-lto/

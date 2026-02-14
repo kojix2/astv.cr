@@ -8,10 +8,6 @@ targets:
   astv:
     main: src/astv.cr
 
-dependencies:
-  kemal:
-    github: kemalcr/kemal
-
 crystal: '>= 1.18.2'
 
 license: MIT
