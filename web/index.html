@@ -865,15 +865,9 @@ end
 
     async function postJson(url, payload) {
       if (window.astvWasmReady) {
-        try {
-          const wasm = await window.astvWasmReady;
-          if (wasm && wasm.postJson) {
-            return wasm.postJson(url, payload);
-          }
-          throw new Error('WASM not ready');
-        } catch (err) {
-          const message = err && err.message ? err.message : String(err);
-          throw new Error(`WASM error: ${message}`);
+        const wasm = await window.astvWasmReady;
+        if (wasm && wasm.postJson) {
+          return wasm.postJson(url, payload);
         }
       }
       throw new Error('WASM not ready');
