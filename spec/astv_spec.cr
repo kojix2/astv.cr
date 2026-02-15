@@ -43,5 +43,14 @@ describe Astv::Core do
       json["errors"].as_a.size.should eq(0)
       json["tokens"].as_a.first["type"].as_s.should eq("IDENT")
     end
+
+    it "does not treat string-contained braces as macro syntax" do
+      source = "puts \"hello {{\"\n{\n"
+      response = Astv::Core.lex_response(source)
+      json = JSON.parse(response)
+
+      json["errors"].as_a.size.should eq(0)
+      json["text"].as_s.includes?("MACRO_EXPRESSION_START").should be_false
+    end
   end
 end

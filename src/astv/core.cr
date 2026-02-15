@@ -10,7 +10,7 @@ module Astv
       tokens = [] of Crystal::Token
       errors = [] of NamedTuple(message: String, kind: String)
       lexer = Crystal::Lexer.new(source)
-      lexer.filename = "input.cr" if lexer.responds_to?(:filename=)
+      lexer.filename = "input.cr"
 
       begin
         loop do
@@ -25,7 +25,7 @@ module Astv
             lines.clear
             tokens.clear
             macro_lexer = Crystal::Lexer.new(source)
-            macro_lexer.filename = "input.cr" if macro_lexer.responds_to?(:filename=)
+            macro_lexer.filename = "input.cr"
             macro_state = Crystal::Token::MacroState.default
 
             loop do
@@ -67,7 +67,50 @@ module Astv
     end
 
     private def macro_syntax?(source : String)
-      source.includes?("{{") || source.includes?("{%")
+      # NOTE: Fast heuristic for fallback lexing.
+      # It intentionally does not parse %q/%Q literals or heredoc bodies.
+      in_double_quote = false
+      in_single_quote = false
+      in_line_comment = false
+      i = 0
+
+      while i < source.bytesize
+        char = source.byte_at(i).unsafe_chr
+
+        if in_line_comment
+          in_line_comment = false if char == '\n'
+        elsif in_double_quote
+          if char == '\\'
+            i += 1 if i + 1 < source.bytesize
+          elsif char == '"'
+            in_double_quote = false
+          end
+        elsif in_single_quote
+          if char == '\\'
+            i += 1 if i + 1 < source.bytesize
+          elsif char == '\''
+            in_single_quote = false
+          end
+        else
+          case char
+          when '#'
+            in_line_comment = true
+          when '"'
+            in_double_quote = true
+          when '\''
+            in_single_quote = true
+          when '{'
+            if i + 1 < source.bytesize
+              nxt = source.byte_at(i + 1).unsafe_chr
+              return true if nxt == '{' || nxt == '%'
+            end
+          end
+        end
+
+        i += 1
+      end
+
+      false
     end
 
     def parse_response(source : String)
