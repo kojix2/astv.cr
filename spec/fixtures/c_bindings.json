@@ -1,0 +1,181 @@
+{
+  "source": "# Define the lib bindings and link info:\n@[Link(\"m\")]\nlib LibM\n  fun pow(x : LibC::Double, y : LibC::Double) : LibC::Double\nend\n\n# Call a C function like a Crystal method:\nputs LibM.pow(2.0, 4.0) # => 16.0\n",
+  "text": "@[Link(\"m\")]\nlib LibM\n  fun pow(x : LibC::Double, y : LibC::Double) : LibC::Double\nend\n\n\nputs(LibM.pow(2.0, 4.0))\n",
+  "ast": {
+    "type": "Expressions",
+    "location": {
+      "start_line": 2,
+      "start_column": 0,
+      "end_line": 8,
+      "end_column": 22
+    },
+    "value": "None",
+    "children": [
+      {
+        "type": "Annotation",
+        "location": {
+          "start_line": 2,
+          "start_column": 0,
+          "end_line": 2,
+          "end_column": 11
+        },
+        "name": "Link",
+        "children": [
+          {
+            "type": "Path",
+            "location": {
+              "start_line": 2,
+              "start_column": 2,
+              "end_line": 2,
+              "end_column": 5
+            },
+            "name": "Link"
+          },
+          {
+            "type": "StringLiteral",
+            "location": {
+              "start_line": 2,
+              "start_column": 7,
+              "end_line": 2,
+              "end_column": 9
+            },
+            "value": "m"
+          }
+        ]
+      },
+      {
+        "type": "LibDef",
+        "location": {
+          "start_line": 3,
+          "start_column": 0,
+          "end_line": 5,
+          "end_column": 2
+        },
+        "name": "LibM",
+        "children": [
+          {
+            "type": "FunDef",
+            "location": {
+              "start_line": 4,
+              "start_column": 2,
+              "end_line": 4,
+              "end_column": 51
+            },
+            "name": "pow",
+            "children": [
+              {
+                "type": "Arg",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 10,
+                  "end_line": 4,
+                  "end_column": 10
+                },
+                "name": "x",
+                "children": [
+                  {
+                    "type": "Path",
+                    "location": {
+                      "start_line": 4,
+                      "start_column": 14,
+                      "end_line": 4,
+                      "end_column": 25
+                    },
+                    "name": "LibC::Double"
+                  }
+                ]
+              },
+              {
+                "type": "Arg",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 28,
+                  "end_line": 4,
+                  "end_column": 28
+                },
+                "name": "y",
+                "children": [
+                  {
+                    "type": "Path",
+                    "location": {
+                      "start_line": 4,
+                      "start_column": 32,
+                      "end_line": 4,
+                      "end_column": 43
+                    },
+                    "name": "LibC::Double"
+                  }
+                ]
+              },
+              {
+                "type": "Path",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 48,
+                  "end_line": 4,
+                  "end_column": 59
+                },
+                "name": "LibC::Double"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 8,
+          "start_column": 0,
+          "end_line": 8,
+          "end_column": 22
+        },
+        "name": "puts",
+        "children": [
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 8,
+              "start_column": 5,
+              "end_line": 8,
+              "end_column": 22
+            },
+            "name": "pow",
+            "children": [
+              {
+                "type": "Path",
+                "location": {
+                  "start_line": 8,
+                  "start_column": 5,
+                  "end_line": 8,
+                  "end_column": 8
+                },
+                "name": "LibM"
+              },
+              {
+                "type": "NumberLiteral",
+                "location": {
+                  "start_line": 8,
+                  "start_column": 14,
+                  "end_line": 8,
+                  "end_column": 16
+                },
+                "value": "2.0:f64"
+              },
+              {
+                "type": "NumberLiteral",
+                "location": {
+                  "start_line": 8,
+                  "start_column": 19,
+                  "end_line": 8,
+                  "end_column": 21
+                },
+                "value": "4.0:f64"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

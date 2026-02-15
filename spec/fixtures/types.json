@@ -1,0 +1,145 @@
+{
+  "source": "def add(a, b)\n  a + b\nend\n\nadd 1, 2         # => 3\nadd \"foo\", \"bar\" # => \"foobar\"\n",
+  "text": "def add(a, b)\n  a + b\nend\n\nadd(1, 2)\nadd(\"foo\", \"bar\")\n",
+  "ast": {
+    "type": "Expressions",
+    "location": {
+      "start_line": 1,
+      "start_column": 0,
+      "end_line": 6,
+      "end_column": 15
+    },
+    "value": "None",
+    "children": [
+      {
+        "type": "Def",
+        "location": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 3,
+          "end_column": 2
+        },
+        "name": "add",
+        "children": [
+          {
+            "type": "Arg",
+            "location": {
+              "start_line": 1,
+              "start_column": 8,
+              "end_line": 1,
+              "end_column": 8
+            },
+            "name": "a"
+          },
+          {
+            "type": "Arg",
+            "location": {
+              "start_line": 1,
+              "start_column": 11,
+              "end_line": 1,
+              "end_column": 11
+            },
+            "name": "b"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 2,
+              "start_column": 2,
+              "end_line": 2,
+              "end_column": 6
+            },
+            "name": "+",
+            "children": [
+              {
+                "type": "Var",
+                "location": {
+                  "start_line": 2,
+                  "start_column": 2,
+                  "end_line": 2,
+                  "end_column": 2
+                },
+                "name": "a"
+              },
+              {
+                "type": "Var",
+                "location": {
+                  "start_line": 2,
+                  "start_column": 6,
+                  "end_line": 2,
+                  "end_column": 6
+                },
+                "name": "b"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 5,
+          "start_column": 0,
+          "end_line": 5,
+          "end_column": 7
+        },
+        "name": "add",
+        "children": [
+          {
+            "type": "NumberLiteral",
+            "location": {
+              "start_line": 5,
+              "start_column": 4,
+              "end_line": 5,
+              "end_column": 4
+            },
+            "value": "1:i32"
+          },
+          {
+            "type": "NumberLiteral",
+            "location": {
+              "start_line": 5,
+              "start_column": 7,
+              "end_line": 5,
+              "end_column": 7
+            },
+            "value": "2:i32"
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 6,
+          "start_column": 0,
+          "end_line": 6,
+          "end_column": 15
+        },
+        "name": "add",
+        "children": [
+          {
+            "type": "StringLiteral",
+            "location": {
+              "start_line": 6,
+              "start_column": 4,
+              "end_line": 6,
+              "end_column": 8
+            },
+            "value": "foo"
+          },
+          {
+            "type": "StringLiteral",
+            "location": {
+              "start_line": 6,
+              "start_column": 11,
+              "end_line": 6,
+              "end_column": 15
+            },
+            "value": "bar"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

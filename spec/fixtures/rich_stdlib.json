@@ -1,0 +1,393 @@
+{
+  "source": "require \"http/client\"\nrequire \"json\"\n\nresponse = HTTP::Client.get(\"https://crystal-lang.org/api/versions.json\")\njson = JSON.parse(response.body)\nversion = json[\"versions\"].as_a.find! { |entry| entry[\"released\"]? != false }[\"name\"]\n\nputs \"Latest Crystal version: #{version || \"Unknown\"}\"\n",
+  "text": "require \"http/client\"\nrequire \"json\"\n\nresponse = HTTP::Client.get(\"https://crystal-lang.org/api/versions.json\")\njson = JSON.parse(response.body)\nversion = json[\"versions\"].as_a.find! do |entry| entry[\"released\"]? != false end[\"name\"]\n\nputs(\"Latest Crystal version: #{version || \"Unknown\"}\")\n",
+  "ast": {
+    "type": "Expressions",
+    "location": {
+      "start_line": 1,
+      "start_column": 0,
+      "end_line": 8,
+      "end_column": 53
+    },
+    "value": "None",
+    "children": [
+      {
+        "type": "Require",
+        "location": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 1,
+          "end_column": 20
+        },
+        "value": "http/client"
+      },
+      {
+        "type": "Require",
+        "location": {
+          "start_line": 2,
+          "start_column": 0,
+          "end_line": 2,
+          "end_column": 13
+        },
+        "value": "json"
+      },
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 4,
+          "start_column": 0,
+          "end_line": 4,
+          "end_column": 72
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 4,
+              "start_column": 0,
+              "end_line": 4,
+              "end_column": 7
+            },
+            "name": "response"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 4,
+              "start_column": 11,
+              "end_line": 4,
+              "end_column": 72
+            },
+            "name": "get",
+            "children": [
+              {
+                "type": "Path",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 11,
+                  "end_line": 4,
+                  "end_column": 22
+                },
+                "name": "HTTP::Client"
+              },
+              {
+                "type": "StringLiteral",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 28,
+                  "end_line": 4,
+                  "end_column": 71
+                },
+                "value": "https://crystal-lang.org/api/versions.json"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 5,
+          "start_column": 0,
+          "end_line": 5,
+          "end_column": 31
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 5,
+              "start_column": 0,
+              "end_line": 5,
+              "end_column": 3
+            },
+            "name": "json"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 5,
+              "start_column": 7,
+              "end_line": 5,
+              "end_column": 31
+            },
+            "name": "parse",
+            "children": [
+              {
+                "type": "Path",
+                "location": {
+                  "start_line": 5,
+                  "start_column": 7,
+                  "end_line": 5,
+                  "end_column": 10
+                },
+                "name": "JSON"
+              },
+              {
+                "type": "Call",
+                "location": {
+                  "start_line": 5,
+                  "start_column": 18,
+                  "end_line": 5,
+                  "end_column": 30
+                },
+                "name": "body",
+                "children": [
+                  {
+                    "type": "Var",
+                    "location": {
+                      "start_line": 5,
+                      "start_column": 18,
+                      "end_line": 5,
+                      "end_column": 25
+                    },
+                    "name": "response"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 6,
+          "start_column": 0,
+          "end_line": 6,
+          "end_column": 84
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 6,
+              "start_column": 0,
+              "end_line": 6,
+              "end_column": 6
+            },
+            "name": "version"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 6,
+              "start_column": 10,
+              "end_line": 6,
+              "end_column": 84
+            },
+            "name": "[]",
+            "children": [
+              {
+                "type": "Call",
+                "location": {
+                  "start_line": 6,
+                  "start_column": 10,
+                  "end_line": 6,
+                  "end_column": 76
+                },
+                "name": "find!",
+                "children": [
+                  {
+                    "type": "Call",
+                    "location": {
+                      "start_line": 6,
+                      "start_column": 10,
+                      "end_line": 6,
+                      "end_column": 30
+                    },
+                    "name": "as_a",
+                    "children": [
+                      {
+                        "type": "Call",
+                        "location": {
+                          "start_line": 6,
+                          "start_column": 10,
+                          "end_line": 6,
+                          "end_column": 25
+                        },
+                        "name": "[]",
+                        "children": [
+                          {
+                            "type": "Var",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 10,
+                              "end_line": 6,
+                              "end_column": 13
+                            },
+                            "name": "json"
+                          },
+                          {
+                            "type": "StringLiteral",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 15,
+                              "end_line": 6,
+                              "end_column": 24
+                            },
+                            "value": "versions"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Block",
+                    "location": {
+                      "start_line": 6,
+                      "start_column": 38,
+                      "end_line": 6,
+                      "end_column": 76
+                    },
+                    "value": "args:1",
+                    "children": [
+                      {
+                        "type": "Var",
+                        "location": {
+                          "start_line": 6,
+                          "start_column": 41,
+                          "end_line": 6,
+                          "end_column": 41
+                        },
+                        "name": "entry"
+                      },
+                      {
+                        "type": "Call",
+                        "location": {
+                          "start_line": 6,
+                          "start_column": 48,
+                          "end_line": 6,
+                          "end_column": 74
+                        },
+                        "name": "!=",
+                        "children": [
+                          {
+                            "type": "Call",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 48,
+                              "end_line": 6,
+                              "end_column": 65
+                            },
+                            "name": "[]?",
+                            "children": [
+                              {
+                                "type": "Var",
+                                "location": {
+                                  "start_line": 6,
+                                  "start_column": 48,
+                                  "end_line": 6,
+                                  "end_column": 52
+                                },
+                                "name": "entry"
+                              },
+                              {
+                                "type": "StringLiteral",
+                                "location": {
+                                  "start_line": 6,
+                                  "start_column": 54,
+                                  "end_line": 6,
+                                  "end_column": 63
+                                },
+                                "value": "released"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "BoolLiteral",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 70,
+                              "end_line": 6,
+                              "end_column": 74
+                            },
+                            "value": false
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "StringLiteral",
+                "location": {
+                  "start_line": 6,
+                  "start_column": 78,
+                  "end_line": 6,
+                  "end_column": 83
+                },
+                "value": "name"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 8,
+          "start_column": 0,
+          "end_line": 8,
+          "end_column": 53
+        },
+        "name": "puts",
+        "children": [
+          {
+            "type": "StringInterpolation",
+            "location": {
+              "start_line": 8,
+              "start_column": 5,
+              "end_line": 8,
+              "end_column": 53
+            },
+            "value": "parts:2",
+            "children": [
+              {
+                "type": "StringLiteral",
+                "value": "Latest Crystal version: "
+              },
+              {
+                "type": "Or",
+                "location": {
+                  "start_line": 8,
+                  "start_column": 32,
+                  "end_line": 8,
+                  "end_column": 51
+                },
+                "value": "Or",
+                "children": [
+                  {
+                    "type": "Var",
+                    "location": {
+                      "start_line": 8,
+                      "start_column": 32,
+                      "end_line": 8,
+                      "end_column": 38
+                    },
+                    "name": "version"
+                  },
+                  {
+                    "type": "StringLiteral",
+                    "location": {
+                      "start_line": 8,
+                      "start_column": 43,
+                      "end_line": 8,
+                      "end_column": 51
+                    },
+                    "value": "Unknown"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

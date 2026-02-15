@@ -1,0 +1,183 @@
+{
+  "source": "loop do\n  case message = gets # type is `String | Nil`\n  when Nil\n    break\n  when \"\"\n    puts \"Please enter a message\"\n  else\n    # In this branch, `message` cannot be `Nil` so we can safely call `String#upcase`\n    puts message.upcase\n  end\nend\n",
+  "text": "loop do\n  case message = gets\n  when Nil\n    break\n  when \"\"\n    puts(\"Please enter a message\")\n  else\n    puts(message.upcase)\n  end\nend",
+  "ast": {
+    "type": "Call",
+    "location": {
+      "start_line": 1,
+      "start_column": 0,
+      "end_line": 11,
+      "end_column": 2
+    },
+    "name": "loop",
+    "children": [
+      {
+        "type": "Block",
+        "location": {
+          "start_line": 1,
+          "start_column": 5,
+          "end_line": 11,
+          "end_column": 2
+        },
+        "value": "args:0",
+        "children": [
+          {
+            "type": "Case",
+            "location": {
+              "start_line": 2,
+              "start_column": 2,
+              "end_line": 10,
+              "end_column": 4
+            },
+            "value": "case message = gets when Nil break when \"\" puts(\"Please enter a message\") else puts(message.upcase) end",
+            "children": [
+              {
+                "type": "Assign",
+                "location": {
+                  "start_line": 2,
+                  "start_column": 7,
+                  "end_line": 2,
+                  "end_column": 20
+                },
+                "value": "=",
+                "children": [
+                  {
+                    "type": "Var",
+                    "location": {
+                      "start_line": 2,
+                      "start_column": 7,
+                      "end_line": 2,
+                      "end_column": 13
+                    },
+                    "name": "message"
+                  },
+                  {
+                    "type": "Call",
+                    "location": {
+                      "start_line": 2,
+                      "start_column": 17,
+                      "end_line": 2,
+                      "end_column": 20
+                    },
+                    "name": "gets"
+                  }
+                ]
+              },
+              {
+                "type": "When",
+                "location": {
+                  "start_line": 3,
+                  "start_column": 2,
+                  "end_line": 3,
+                  "end_column": 9
+                },
+                "value": "when Nil break",
+                "children": [
+                  {
+                    "type": "Path",
+                    "location": {
+                      "start_line": 3,
+                      "start_column": 7,
+                      "end_line": 3,
+                      "end_column": 9
+                    },
+                    "name": "Nil"
+                  },
+                  {
+                    "type": "Break",
+                    "location": {
+                      "start_line": 4,
+                      "start_column": 4,
+                      "end_line": 4,
+                      "end_column": 8
+                    },
+                    "value": "Break"
+                  }
+                ]
+              },
+              {
+                "type": "When",
+                "location": {
+                  "start_line": 5,
+                  "start_column": 2,
+                  "end_line": 5,
+                  "end_column": 8
+                },
+                "value": "when \"\" puts(\"Please enter a message\")",
+                "children": [
+                  {
+                    "type": "StringLiteral",
+                    "location": {
+                      "start_line": 5,
+                      "start_column": 7,
+                      "end_line": 5,
+                      "end_column": 8
+                    },
+                    "value": ""
+                  },
+                  {
+                    "type": "Call",
+                    "location": {
+                      "start_line": 6,
+                      "start_column": 4,
+                      "end_line": 6,
+                      "end_column": 32
+                    },
+                    "name": "puts",
+                    "children": [
+                      {
+                        "type": "StringLiteral",
+                        "location": {
+                          "start_line": 6,
+                          "start_column": 9,
+                          "end_line": 6,
+                          "end_column": 32
+                        },
+                        "value": "Please enter a message"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Call",
+                "location": {
+                  "start_line": 9,
+                  "start_column": 4,
+                  "end_line": 9,
+                  "end_column": 22
+                },
+                "name": "puts",
+                "children": [
+                  {
+                    "type": "Call",
+                    "location": {
+                      "start_line": 9,
+                      "start_column": 9,
+                      "end_line": 9,
+                      "end_column": 22
+                    },
+                    "name": "upcase",
+                    "children": [
+                      {
+                        "type": "Var",
+                        "location": {
+                          "start_line": 9,
+                          "start_column": 9,
+                          "end_line": 9,
+                          "end_column": 15
+                        },
+                        "name": "message"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

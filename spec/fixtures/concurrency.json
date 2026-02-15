@@ -1,0 +1,431 @@
+{
+  "source": "channel = Channel(Int32).new\n\n3.times do |i|\n  spawn do\n    3.times do |j|\n      sleep rand(100).milliseconds # add non-determinism for fun\n      channel.send 10 * (i + 1) + j\n    end\n  end\nend\n\n9.times do\n  puts channel.receive\nend\n",
+  "text": "channel = Channel(Int32).new\n\n3.times do |i|\n  spawn do\n    3.times do |j|\n      sleep((rand(100)).milliseconds)\n      channel.send((10 * (i + 1)) + j)\n    end\n  end\nend\n\n9.times do\n  puts(channel.receive)\nend\n",
+  "ast": {
+    "type": "Expressions",
+    "location": {
+      "start_line": 1,
+      "start_column": 0,
+      "end_line": 14,
+      "end_column": 2
+    },
+    "value": "None",
+    "children": [
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 1,
+          "end_column": 27
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 1,
+              "start_column": 0,
+              "end_line": 1,
+              "end_column": 6
+            },
+            "name": "channel"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 1,
+              "start_column": 10,
+              "end_line": 1,
+              "end_column": 27
+            },
+            "name": "new",
+            "children": [
+              {
+                "type": "Generic",
+                "location": {
+                  "start_line": 1,
+                  "start_column": 10,
+                  "end_line": 1,
+                  "end_column": 23
+                },
+                "value": "vars:1",
+                "children": [
+                  {
+                    "type": "Path",
+                    "location": {
+                      "start_line": 1,
+                      "start_column": 10,
+                      "end_line": 1,
+                      "end_column": 16
+                    },
+                    "name": "Channel"
+                  },
+                  {
+                    "type": "Path",
+                    "location": {
+                      "start_line": 1,
+                      "start_column": 18,
+                      "end_line": 1,
+                      "end_column": 22
+                    },
+                    "name": "Int32"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 3,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 2
+        },
+        "name": "times",
+        "children": [
+          {
+            "type": "NumberLiteral",
+            "location": {
+              "start_line": 3,
+              "start_column": 0,
+              "end_line": 3,
+              "end_column": 0
+            },
+            "value": "3:i32"
+          },
+          {
+            "type": "Block",
+            "location": {
+              "start_line": 3,
+              "start_column": 8,
+              "end_line": 10,
+              "end_column": 2
+            },
+            "value": "args:1",
+            "children": [
+              {
+                "type": "Var",
+                "location": {
+                  "start_line": 3,
+                  "start_column": 12,
+                  "end_line": 3,
+                  "end_column": 12
+                },
+                "name": "i"
+              },
+              {
+                "type": "Call",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 2,
+                  "end_line": 9,
+                  "end_column": 4
+                },
+                "name": "spawn",
+                "children": [
+                  {
+                    "type": "Block",
+                    "location": {
+                      "start_line": 4,
+                      "start_column": 8,
+                      "end_line": 9,
+                      "end_column": 4
+                    },
+                    "value": "args:0",
+                    "children": [
+                      {
+                        "type": "Call",
+                        "location": {
+                          "start_line": 5,
+                          "start_column": 4,
+                          "end_line": 8,
+                          "end_column": 6
+                        },
+                        "name": "times",
+                        "children": [
+                          {
+                            "type": "NumberLiteral",
+                            "location": {
+                              "start_line": 5,
+                              "start_column": 4,
+                              "end_line": 5,
+                              "end_column": 4
+                            },
+                            "value": "3:i32"
+                          },
+                          {
+                            "type": "Block",
+                            "location": {
+                              "start_line": 5,
+                              "start_column": 12,
+                              "end_line": 8,
+                              "end_column": 6
+                            },
+                            "value": "args:1",
+                            "children": [
+                              {
+                                "type": "Var",
+                                "location": {
+                                  "start_line": 5,
+                                  "start_column": 16,
+                                  "end_line": 5,
+                                  "end_column": 16
+                                },
+                                "name": "j"
+                              },
+                              {
+                                "type": "Expressions",
+                                "location": {
+                                  "start_line": 6,
+                                  "start_column": 6,
+                                  "end_line": 7,
+                                  "end_column": 34
+                                },
+                                "value": "None",
+                                "children": [
+                                  {
+                                    "type": "Call",
+                                    "location": {
+                                      "start_line": 6,
+                                      "start_column": 6,
+                                      "end_line": 6,
+                                      "end_column": 33
+                                    },
+                                    "name": "sleep",
+                                    "children": [
+                                      {
+                                        "type": "Call",
+                                        "location": {
+                                          "start_line": 6,
+                                          "start_column": 12,
+                                          "end_line": 6,
+                                          "end_column": 33
+                                        },
+                                        "name": "milliseconds",
+                                        "children": [
+                                          {
+                                            "type": "Call",
+                                            "location": {
+                                              "start_line": 6,
+                                              "start_column": 12,
+                                              "end_line": 6,
+                                              "end_column": 20
+                                            },
+                                            "name": "rand",
+                                            "children": [
+                                              {
+                                                "type": "NumberLiteral",
+                                                "location": {
+                                                  "start_line": 6,
+                                                  "start_column": 17,
+                                                  "end_line": 6,
+                                                  "end_column": 19
+                                                },
+                                                "value": "100:i32"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Call",
+                                    "location": {
+                                      "start_line": 7,
+                                      "start_column": 6,
+                                      "end_line": 7,
+                                      "end_column": 34
+                                    },
+                                    "name": "send",
+                                    "children": [
+                                      {
+                                        "type": "Var",
+                                        "location": {
+                                          "start_line": 7,
+                                          "start_column": 6,
+                                          "end_line": 7,
+                                          "end_column": 12
+                                        },
+                                        "name": "channel"
+                                      },
+                                      {
+                                        "type": "Call",
+                                        "location": {
+                                          "start_line": 7,
+                                          "start_column": 19,
+                                          "end_line": 7,
+                                          "end_column": 34
+                                        },
+                                        "name": "+",
+                                        "children": [
+                                          {
+                                            "type": "Call",
+                                            "location": {
+                                              "start_line": 7,
+                                              "start_column": 19,
+                                              "end_line": 7,
+                                              "end_column": 30
+                                            },
+                                            "name": "*",
+                                            "children": [
+                                              {
+                                                "type": "NumberLiteral",
+                                                "location": {
+                                                  "start_line": 7,
+                                                  "start_column": 19,
+                                                  "end_line": 7,
+                                                  "end_column": 20
+                                                },
+                                                "value": "10:i32"
+                                              },
+                                              {
+                                                "type": "Expressions",
+                                                "location": {
+                                                  "start_line": 7,
+                                                  "start_column": 24,
+                                                  "end_line": 7,
+                                                  "end_column": 30
+                                                },
+                                                "value": "Paren",
+                                                "children": [
+                                                  {
+                                                    "type": "Call",
+                                                    "location": {
+                                                      "start_line": 7,
+                                                      "start_column": 25,
+                                                      "end_line": 7,
+                                                      "end_column": 29
+                                                    },
+                                                    "name": "+",
+                                                    "children": [
+                                                      {
+                                                        "type": "Var",
+                                                        "location": {
+                                                          "start_line": 7,
+                                                          "start_column": 25,
+                                                          "end_line": 7,
+                                                          "end_column": 25
+                                                        },
+                                                        "name": "i"
+                                                      },
+                                                      {
+                                                        "type": "NumberLiteral",
+                                                        "location": {
+                                                          "start_line": 7,
+                                                          "start_column": 29,
+                                                          "end_line": 7,
+                                                          "end_column": 29
+                                                        },
+                                                        "value": "1:i32"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "type": "Var",
+                                            "location": {
+                                              "start_line": 7,
+                                              "start_column": 34,
+                                              "end_line": 7,
+                                              "end_column": 34
+                                            },
+                                            "name": "j"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 12,
+          "start_column": 0,
+          "end_line": 14,
+          "end_column": 2
+        },
+        "name": "times",
+        "children": [
+          {
+            "type": "NumberLiteral",
+            "location": {
+              "start_line": 12,
+              "start_column": 0,
+              "end_line": 12,
+              "end_column": 0
+            },
+            "value": "9:i32"
+          },
+          {
+            "type": "Block",
+            "location": {
+              "start_line": 12,
+              "start_column": 8,
+              "end_line": 14,
+              "end_column": 2
+            },
+            "value": "args:0",
+            "children": [
+              {
+                "type": "Call",
+                "location": {
+                  "start_line": 13,
+                  "start_column": 2,
+                  "end_line": 13,
+                  "end_column": 21
+                },
+                "name": "puts",
+                "children": [
+                  {
+                    "type": "Call",
+                    "location": {
+                      "start_line": 13,
+                      "start_column": 7,
+                      "end_line": 13,
+                      "end_column": 21
+                    },
+                    "name": "receive",
+                    "children": [
+                      {
+                        "type": "Var",
+                        "location": {
+                          "start_line": 13,
+                          "start_column": 7,
+                          "end_line": 13,
+                          "end_column": 13
+                        },
+                        "name": "channel"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

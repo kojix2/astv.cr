@@ -1,0 +1,351 @@
+{
+  "source": "# A very basic HTTP server\nrequire \"http/server\"\n\nserver = HTTP::Server.new do |context|\n  context.response.content_type = \"text/plain\"\n  context.response.print \"Hello world, got #{context.request.path}!\"\nend\n\naddress = server.bind_tcp(8080)\nputs \"Listening on http://#{address}\"\n\n# This call blocks until the process is terminated\nserver.listen\n",
+  "text": "require \"http/server\"\n\nserver = HTTP::Server.new do |context|\n  context.response.content_type = \"text/plain\"\n  context.response.print(\"Hello world, got #{context.request.path}!\")\nend\n\naddress = server.bind_tcp(8080)\nputs(\"Listening on http://#{address}\")\n\n\nserver.listen\n",
+  "ast": {
+    "type": "Expressions",
+    "location": {
+      "start_line": 2,
+      "start_column": 0,
+      "end_line": 13,
+      "end_column": 12
+    },
+    "value": "None",
+    "children": [
+      {
+        "type": "Require",
+        "location": {
+          "start_line": 2,
+          "start_column": 0,
+          "end_line": 2,
+          "end_column": 20
+        },
+        "value": "http/server"
+      },
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 4,
+          "start_column": 0,
+          "end_line": 7,
+          "end_column": 2
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 4,
+              "start_column": 0,
+              "end_line": 4,
+              "end_column": 5
+            },
+            "name": "server"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 4,
+              "start_column": 9,
+              "end_line": 7,
+              "end_column": 2
+            },
+            "name": "new",
+            "children": [
+              {
+                "type": "Path",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 9,
+                  "end_line": 4,
+                  "end_column": 20
+                },
+                "name": "HTTP::Server"
+              },
+              {
+                "type": "Block",
+                "location": {
+                  "start_line": 4,
+                  "start_column": 26,
+                  "end_line": 7,
+                  "end_column": 2
+                },
+                "value": "args:1",
+                "children": [
+                  {
+                    "type": "Var",
+                    "location": {
+                      "start_line": 4,
+                      "start_column": 30,
+                      "end_line": 4,
+                      "end_column": 30
+                    },
+                    "name": "context"
+                  },
+                  {
+                    "type": "Expressions",
+                    "location": {
+                      "start_line": 5,
+                      "start_column": 2,
+                      "end_line": 6,
+                      "end_column": 67
+                    },
+                    "value": "None",
+                    "children": [
+                      {
+                        "type": "Call",
+                        "location": {
+                          "start_line": 5,
+                          "start_column": 2,
+                          "end_line": 5,
+                          "end_column": 45
+                        },
+                        "name": "content_type=",
+                        "children": [
+                          {
+                            "type": "Call",
+                            "location": {
+                              "start_line": 5,
+                              "start_column": 2,
+                              "end_line": 5,
+                              "end_column": 17
+                            },
+                            "name": "response",
+                            "children": [
+                              {
+                                "type": "Var",
+                                "location": {
+                                  "start_line": 5,
+                                  "start_column": 2,
+                                  "end_line": 5,
+                                  "end_column": 8
+                                },
+                                "name": "context"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "StringLiteral",
+                            "location": {
+                              "start_line": 5,
+                              "start_column": 34,
+                              "end_line": 5,
+                              "end_column": 45
+                            },
+                            "value": "text/plain"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Call",
+                        "location": {
+                          "start_line": 6,
+                          "start_column": 2,
+                          "end_line": 6,
+                          "end_column": 67
+                        },
+                        "name": "print",
+                        "children": [
+                          {
+                            "type": "Call",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 2,
+                              "end_line": 6,
+                              "end_column": 17
+                            },
+                            "name": "response",
+                            "children": [
+                              {
+                                "type": "Var",
+                                "location": {
+                                  "start_line": 6,
+                                  "start_column": 2,
+                                  "end_line": 6,
+                                  "end_column": 8
+                                },
+                                "name": "context"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "StringInterpolation",
+                            "location": {
+                              "start_line": 6,
+                              "start_column": 25,
+                              "end_line": 6,
+                              "end_column": 67
+                            },
+                            "value": "parts:3",
+                            "children": [
+                              {
+                                "type": "StringLiteral",
+                                "value": "Hello world, got "
+                              },
+                              {
+                                "type": "Call",
+                                "location": {
+                                  "start_line": 6,
+                                  "start_column": 45,
+                                  "end_line": 6,
+                                  "end_column": 64
+                                },
+                                "name": "path",
+                                "children": [
+                                  {
+                                    "type": "Call",
+                                    "location": {
+                                      "start_line": 6,
+                                      "start_column": 45,
+                                      "end_line": 6,
+                                      "end_column": 59
+                                    },
+                                    "name": "request",
+                                    "children": [
+                                      {
+                                        "type": "Var",
+                                        "location": {
+                                          "start_line": 6,
+                                          "start_column": 45,
+                                          "end_line": 6,
+                                          "end_column": 51
+                                        },
+                                        "name": "context"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "StringLiteral",
+                                "value": "!"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Assign",
+        "location": {
+          "start_line": 9,
+          "start_column": 0,
+          "end_line": 9,
+          "end_column": 30
+        },
+        "value": "=",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 9,
+              "start_column": 0,
+              "end_line": 9,
+              "end_column": 6
+            },
+            "name": "address"
+          },
+          {
+            "type": "Call",
+            "location": {
+              "start_line": 9,
+              "start_column": 10,
+              "end_line": 9,
+              "end_column": 30
+            },
+            "name": "bind_tcp",
+            "children": [
+              {
+                "type": "Var",
+                "location": {
+                  "start_line": 9,
+                  "start_column": 10,
+                  "end_line": 9,
+                  "end_column": 15
+                },
+                "name": "server"
+              },
+              {
+                "type": "NumberLiteral",
+                "location": {
+                  "start_line": 9,
+                  "start_column": 26,
+                  "end_line": 9,
+                  "end_column": 29
+                },
+                "value": "8080:i32"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 10,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 36
+        },
+        "name": "puts",
+        "children": [
+          {
+            "type": "StringInterpolation",
+            "location": {
+              "start_line": 10,
+              "start_column": 5,
+              "end_line": 10,
+              "end_column": 36
+            },
+            "value": "parts:2",
+            "children": [
+              {
+                "type": "StringLiteral",
+                "value": "Listening on http://"
+              },
+              {
+                "type": "Var",
+                "location": {
+                  "start_line": 10,
+                  "start_column": 28,
+                  "end_line": 10,
+                  "end_column": 34
+                },
+                "name": "address"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Call",
+        "location": {
+          "start_line": 13,
+          "start_column": 0,
+          "end_line": 13,
+          "end_column": 12
+        },
+        "name": "listen",
+        "children": [
+          {
+            "type": "Var",
+            "location": {
+              "start_line": 13,
+              "start_column": 0,
+              "end_line": 13,
+              "end_column": 5
+            },
+            "name": "server"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
