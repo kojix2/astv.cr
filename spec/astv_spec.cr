@@ -23,13 +23,15 @@ describe Astv::Core do
   end
 
   describe "#lex_response" do
-    it "returns JSON with errors for macro syntax instead of raising" do
+    it "returns macro tokens for macro syntax" do
       source = File.read("spec/fixtures/macros.cr")
       response = Astv::Core.lex_response(source)
       json = JSON.parse(response)
 
       json["source"].as_s.should eq(source)
-      json["errors"].as_a.size.should be > 0
+      json["errors"].as_a.size.should eq(0)
+      json["text"].as_s.includes?("MACRO_EXPRESSION_START").should be_true
+      json["tokens"].as_a.first["type"].as_s.should eq("MACRO_LITERAL")
     end
 
     it "returns JSON without errors for plain syntax" do
@@ -39,6 +41,7 @@ describe Astv::Core do
 
       json["source"].as_s.should eq(source)
       json["errors"].as_a.size.should eq(0)
+      json["tokens"].as_a.first["type"].as_s.should eq("IDENT")
     end
   end
 end

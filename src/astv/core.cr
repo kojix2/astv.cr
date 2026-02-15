@@ -15,12 +15,32 @@ module Astv
       begin
         loop do
           token = lexer.next_token
-          tokens << token
+          tokens << token.dup
           lines << token_to_tsv(token)
           break if token.type == Crystal::Token::Kind::EOF
         end
       rescue ex
-        errors << {message: (ex.message || ex.class.name), kind: ex.class.name}
+        if macro_syntax?(source)
+          begin
+            lines.clear
+            tokens.clear
+            macro_lexer = Crystal::Lexer.new(source)
+            macro_lexer.filename = "input.cr" if macro_lexer.responds_to?(:filename=)
+            macro_state = Crystal::Token::MacroState.default
+
+            loop do
+              token = macro_lexer.next_macro_token(macro_state, false)
+              tokens << token.dup
+              lines << token_to_tsv(token)
+              macro_state = token.macro_state
+              break if token.type == Crystal::Token::Kind::EOF
+            end
+          rescue macro_ex
+            errors << {message: (macro_ex.message || macro_ex.class.name), kind: macro_ex.class.name}
+          end
+        else
+          errors << {message: (ex.message || ex.class.name), kind: ex.class.name}
+        end
       end
 
       JSON.build do |json|
@@ -44,6 +64,10 @@ module Astv
           end
         end
       end
+    end
+
+    private def macro_syntax?(source : String)
+      source.includes?("{{") || source.includes?("{%")
     end
 
     def parse_response(source : String)
