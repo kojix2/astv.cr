@@ -8,14 +8,19 @@ module Astv
     def lex_response(source : String)
       lines = [] of String
       tokens = [] of Crystal::Token
+      errors = [] of NamedTuple(message: String, kind: String)
       lexer = Crystal::Lexer.new(source)
       lexer.filename = "input.cr" if lexer.responds_to?(:filename=)
 
-      loop do
-        token = lexer.next_token
-        tokens << token
-        lines << token_to_tsv(token)
-        break if token.type == Crystal::Token::Kind::EOF
+      begin
+        loop do
+          token = lexer.next_token
+          tokens << token
+          lines << token_to_tsv(token)
+          break if token.type == Crystal::Token::Kind::EOF
+        end
+      rescue ex
+        errors << {message: (ex.message || ex.class.name), kind: ex.class.name}
       end
 
       JSON.build do |json|
@@ -28,7 +33,14 @@ module Astv
             end
           end
           json.field "errors" do
-            json.array { }
+            json.array do
+              errors.each do |error|
+                json.object do
+                  json.field "message", error[:message]
+                  json.field "kind", error[:kind]
+                end
+              end
+            end
           end
         end
       end

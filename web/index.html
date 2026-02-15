@@ -894,10 +894,7 @@ end
       rubyActionStatus.textContent = 'Parsing...';
       rubyActionStatus.className = 'status';
       try {
-        const [parseResult, lexResult] = await Promise.all([
-          postJson('/api/parse', { code: source }),
-          postJson('/api/lex', { code: source })
-        ]);
+        const parseResult = await postJson('/api/parse', { code: source });
 
         if (parseResult && parseResult.ast) {
           renderTree(parseResult.ast);
@@ -918,8 +915,20 @@ end
           rubyActionStatus.className = 'status bad';
         }
 
-        if (lexResult && tokenView) {
-          tokenView.textContent = lexResult.text || '';
+        if (tokenView) {
+          try {
+            const lexResult = await postJson('/api/lex', { code: source });
+            if (lexResult && lexResult.text) {
+              tokenView.textContent = lexResult.text;
+            } else if (lexResult && lexResult.errors && lexResult.errors.length > 0) {
+              tokenView.textContent = lexResult.errors[0].message || 'Lex error';
+            } else {
+              tokenView.textContent = '';
+            }
+          } catch (lexErr) {
+            const lexMessage = lexErr && lexErr.message ? lexErr.message : String(lexErr);
+            tokenView.textContent = `Lex error: ${lexMessage}`;
+          }
         }
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
