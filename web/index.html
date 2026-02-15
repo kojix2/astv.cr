@@ -891,6 +891,7 @@ end
 
     async function parseAndRender() {
       const source = rubyInput.value || '';
+      const hasMacroSyntax = source.includes('{{') || source.includes('{%');
       rubyActionStatus.textContent = 'Parsing...';
       rubyActionStatus.className = 'status';
       try {
@@ -916,6 +917,10 @@ end
         }
 
         if (tokenView) {
+          if (hasMacroSyntax) {
+            tokenView.textContent = 'Tokens tab: macro syntax (`{{ ... }}`, `{% ... %}`) is not supported yet.';
+            return;
+          }
           try {
             const lexResult = await postJson('/api/lex', { code: source });
             if (lexResult && lexResult.text) {
@@ -927,7 +932,11 @@ end
             }
           } catch (lexErr) {
             const lexMessage = lexErr && lexErr.message ? lexErr.message : String(lexErr);
-            tokenView.textContent = `Lex error: ${lexMessage}`;
+            if (lexMessage.includes('unreachable')) {
+              tokenView.textContent = 'Tokens tab: lexer failed in WASM runtime for this input.';
+            } else {
+              tokenView.textContent = `Lex error: ${lexMessage}`;
+            }
           }
         }
       } catch (err) {
