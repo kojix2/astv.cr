@@ -41,6 +41,10 @@ module AstvWasm
     end
   end
 
+  def version : Int32
+    set_output(%({"crystal_version":"#{Crystal::VERSION}"}))
+  end
+
   private def safe_string(ptr : UInt8*, len : Int32) : String
     return "" if ptr.null? || len <= 0
 
@@ -82,4 +86,8 @@ end
 
 fun astv_last_len : Int32
   AstvWasm.last_len
+end
+
+fun astv_version : Int32
+  AstvWasm.version
 end

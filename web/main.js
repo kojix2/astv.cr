@@ -18,7 +18,7 @@ async function initAstvWasm() {
     throw new Error("WASM memory not found.");
   }
 
-  const { astv_alloc, astv_free, astv_parse, astv_lex, astv_last_len } =
+  const { astv_alloc, astv_free, astv_parse, astv_lex, astv_last_len, astv_version } =
     exports;
   if (!astv_alloc || !astv_parse || !astv_lex || !astv_last_len) {
     throw new Error("Required WASM exports are missing.");
@@ -49,6 +49,26 @@ async function initAstvWasm() {
     return JSON.parse(text);
   }
 
+  function callNoInput(fn) {
+    const outPtr = fn();
+    const outLen = astv_last_len();
+    const outBytes = new Uint8Array(memory.buffer, outPtr, outLen);
+    const text = decoder.decode(outBytes);
+    return JSON.parse(text);
+  }
+
+  let crystalVersion = null;
+  if (astv_version) {
+    try {
+      const versionInfo = callNoInput(astv_version);
+      if (versionInfo && typeof versionInfo.crystal_version === "string") {
+        crystalVersion = versionInfo.crystal_version;
+      }
+    } catch (_) {
+      crystalVersion = null;
+    }
+  }
+
   function postJson(url, payload) {
     const source =
       payload && typeof payload.code === "string" ? payload.code : "";
@@ -61,7 +81,7 @@ async function initAstvWasm() {
     throw new Error(`Unknown endpoint: ${url}`);
   }
 
-  return { postJson };
+  return { postJson, crystalVersion };
 }
 
 function initializeRuntime(exports) {

@@ -70,8 +70,6 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 16px;
-      border-bottom: 2px solid var(--line);
-      padding-bottom: 12px;
     }
 
     h1 {
@@ -447,9 +445,7 @@
     <header>
       <div>
         <h1>Crystal AST Tree Viewer</h1>
-        <p class="sub">Visualize Crystal syntax as a tree</p>
       </div>
-      <p class="sub">Parse and render</p>
     </header>
 
     <div class="column">
@@ -468,7 +464,7 @@ end
         </div>
         <div class="controls">
           <button id="parseBtn" type="button" title="Ctrl/Cmd+Enter">Render</button>
-          <button id="copyUrlBtn" type="button">Copy URL</button>
+          <button id="copyUrlBtn" type="button" title="Share this code as a URL">Share Link</button>
           <span id="rubyActionStatus" class="status">Idle</span>
         </div>
       </section>
@@ -880,10 +876,10 @@ end
       const url = `${baseUrl}?${params.toString()}`;
       try {
         await navigator.clipboard.writeText(url);
-        rubyActionStatus.textContent = 'URL copied';
+        rubyActionStatus.textContent = 'Share link copied';
         rubyActionStatus.className = 'status ok';
       } catch (_) {
-        rubyActionStatus.textContent = 'Failed to copy URL';
+        rubyActionStatus.textContent = 'Failed to copy share link';
         rubyActionStatus.className = 'status bad';
       }
     });
