@@ -25,13 +25,21 @@
       --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       --display: "Cormorant Garamond", "Georgia", serif;
       --sans: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --node-literal: #3567b1;
+      --node-reference: #7a3a9a;
+      --node-call: #0d7665;
+      --node-control: #b45309;
+      --node-decl: #9f1239;
+      --node-type: #1e6d3d;
+      --node-convert: #4c51bf;
+      --node-other: #475569;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 24px;
+      padding: clamp(12px, 2vw, 24px);
       font-family: var(--sans);
       color: var(--ink);
       background:
@@ -39,15 +47,21 @@
         radial-gradient(circle at 90% 20%, rgba(31,122,79,0.08), transparent 45%),
         linear-gradient(180deg, #f8f5ef 0%, #efe9df 100%);
       min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
     }
 
     .wrap {
-      max-width: 100%;
+      width: 100%;
+      max-width: 1600px;
       margin: 0 auto;
       display: grid;
       grid-template-columns: 1fr 1.1fr;
+      grid-template-rows: auto minmax(0, 1fr) auto;
       gap: 24px;
       align-items: stretch;
+      height: 100%;
+      min-height: 0;
     }
 
     header {
@@ -79,6 +93,8 @@
       border-radius: 14px;
       padding: 16px;
       box-shadow: 0 12px 32px rgba(30, 29, 27, 0.08);
+      min-height: 0;
+      overflow: hidden;
     }
 
     .tabs {
@@ -104,7 +120,12 @@
     }
 
     .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    .tab-panel.active {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
 
     .panel-header {
       display: flex;
@@ -133,24 +154,31 @@
       font-size: 12px;
       white-space: pre-wrap;
       line-height: 1.6;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 8px;
     }
 
     .column {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 16px;
       align-self: stretch;
+      min-height: 0;
     }
 
     .column .panel {
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;
+      min-height: 0;
     }
 
     .wrap > .panel {
       display: flex;
       flex-direction: column;
+      min-height: 0;
     }
 
     .site-footer {
@@ -178,8 +206,8 @@
 
     textarea {
       width: 100%;
-      min-height: 320px;
-      resize: vertical;
+      min-height: 0;
+      resize: none;
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 12px;
@@ -194,7 +222,7 @@
       position: relative;
       width: 100%;
       flex: 1;
-      min-height: 320px;
+      min-height: 0;
       border: 1px solid var(--line);
       border-radius: 10px;
       background: #fbfaf7;
@@ -293,6 +321,10 @@
       font-family: var(--mono);
       font-size: 13px;
       line-height: 1.6;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 8px;
     }
 
     .tree ul {
@@ -339,11 +371,13 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #f3eee4;
+      background: #f7f2e8;
+      border: 1px solid color-mix(in srgb, var(--node-color, var(--node-other)) 32%, #b7ad9e);
       padding: 2px 6px;
       border-radius: 6px;
       cursor: pointer;
       transition: background 120ms ease, box-shadow 120ms ease;
+      color: var(--node-color, var(--ink));
     }
 
     .node .type { color: var(--muted); font-size: 11px; }
@@ -363,7 +397,7 @@
       flex-direction: column;
       gap: 4px;
       padding: 8px 10px;
-      background: #efe7d8;
+      background: color-mix(in srgb, var(--node-color, #efe7d8) 10%, #f6f2e8);
       box-shadow: 0 8px 18px rgba(30, 29, 27, 0.12);
     }
 
@@ -375,12 +409,36 @@
       box-shadow: 0 0 0 2px rgba(208, 85, 47, 0.2);
     }
 
+    .node-kind-literal { --node-color: var(--node-literal); }
+    .node-kind-reference { --node-color: var(--node-reference); }
+    .node-kind-call { --node-color: var(--node-call); }
+    .node-kind-control { --node-color: var(--node-control); }
+    .node-kind-declaration { --node-color: var(--node-decl); }
+    .node-kind-type { --node-color: var(--node-type); }
+    .node-kind-conversion { --node-color: var(--node-convert); }
+    .node-kind-other { --node-color: var(--node-other); }
+
     .footer-status {
       font-size: 12px;
     }
 
     @media (max-width: 900px) {
-      .wrap { grid-template-columns: 1fr; }
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+      }
+
+      .wrap {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        height: auto;
+      }
+
+      .column,
+      .wrap > .panel {
+        min-height: 42vh;
+      }
     }
   </style>
 </head>
@@ -614,11 +672,35 @@ end
       return lines.join('\n');
     }
 
+    function nodeKind(typeName) {
+      if (typeof typeName !== 'string') return 'other';
+      const t = typeName.toLowerCase();
+      const literal = new Set(['number_literal', 'string_literal', 'char_literal', 'symbol_literal', 'bool_literal', 'nil_literal', 'array_literal', 'hash_literal', 'regex_literal', 'tuple_literal', 'named_tuple_literal', 'range_literal']);
+      const reference = new Set(['var', 'instance_var', 'class_var', 'global', 'path', 'self']);
+      const call = new Set(['call', 'macro_expression', 'yield', 'proc_literal']);
+      const control = new Set(['if', 'unless', 'case', 'select', 'while', 'until', 'return', 'break', 'next', 'rescue', 'ensure', 'exception_handler', 'expressions']);
+      const declaration = new Set(['def', 'macro', 'macro_def', 'class_def', 'module_def', 'lib_def', 'enum_def', 'alias', 'annotation', 'annotation_def', 'assign', 'arg', 'block']);
+      const type = new Set(['type_declaration', 'generic', 'union', 'metaclass', 'virtual']);
+      const conversion = new Set(['cast', 'is_a', 'responds_to', 'nilable_cast']);
+
+      if (literal.has(t)) return 'literal';
+      if (reference.has(t)) return 'reference';
+      if (call.has(t)) return 'call';
+      if (control.has(t)) return 'control';
+      if (declaration.has(t)) return 'declaration';
+      if (type.has(t)) return 'type';
+      if (conversion.has(t)) return 'conversion';
+      return 'other';
+    }
+
     function buildTree(value, label = 'root') {
       const t = typeOf(value);
       const li = document.createElement('li');
       const header = document.createElement('span');
       header.className = 'node';
+      if (t === 'object' && value && typeof value.type === 'string') {
+        header.classList.add(`node-kind-${nodeKind(value.type)}`);
+      }
       const rep = t === 'object' ? representativeValue(value) : '';
       const details = t === 'object' ? hoverDetails(value) : '';
       if (details) header.title = details;
