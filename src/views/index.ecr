@@ -557,6 +557,7 @@ end
   </div>
 
   <script>
+    const serverCrystalVersion = <%= Crystal::VERSION.to_json %>;
     const tree = document.getElementById('tree');
     const textView = document.getElementById('textView');
     const jsonView = document.getElementById('jsonView');
@@ -1083,7 +1084,7 @@ end
     parseBtn.addEventListener('click', parseAndRender);
 
     if (rubyStatus) {
-      rubyStatus.textContent = 'Server ready';
+      rubyStatus.textContent = `Server ready (Crystal ${serverCrystalVersion})`;
       rubyStatus.className = 'status ok';
     }
 
