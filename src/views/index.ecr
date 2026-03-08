@@ -521,7 +521,7 @@ end
         startLine: Number(loc.start_line),
         startColumn: Number(loc.start_column) + 1,
         endLine: Number(loc.end_line),
-        endColumn: Number(loc.end_column)
+        endColumn: Number(loc.end_column) + 1
       };
     }
 
@@ -584,7 +584,7 @@ end
           Object.prototype.hasOwnProperty.call(value, 'end_column')
         ) {
           const startCol = Number(value.start_column) + 1;
-          const endCol = Number(value.end_column);
+          const endCol = Number(value.end_column) + 1;
           return `${value.start_line}:${startCol}-${value.end_line}:${endCol}`;
         }
         try {
@@ -718,7 +718,7 @@ end
         const endColRaw = line === endLine ? Math.max(startCol, loc.endColumn) : text.length + 1;
         const endCol = Math.max(startCol, endColRaw);
         const left = paddingLeft + (startCol - 1) * charWidth - rubyInput.scrollLeft;
-        const width = Math.max(2, (endCol - startCol + 1) * charWidth);
+        const width = Math.max(2, (endCol - startCol) * charWidth);
         const top = paddingTop + (line - 1) * lineHeight - rubyInput.scrollTop;
         const block = document.createElement('div');
         block.className = 'loc-block';
