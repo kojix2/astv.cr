@@ -16,10 +16,11 @@ module AstvWasm
   def parse(ptr : UInt8*, len : Int32) : Int32
     source = ""
     begin
-      source = safe_string(ptr, len)
       if len > MAX_INPUT_BYTES
         return set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
       end
+
+      source = safe_string(ptr, len)
 
       set_output(Astv::Core.parse_response(source))
     rescue ex
@@ -30,10 +31,11 @@ module AstvWasm
   def lex(ptr : UInt8*, len : Int32) : Int32
     source = ""
     begin
-      source = safe_string(ptr, len)
       if len > MAX_INPUT_BYTES
         return set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
       end
+
+      source = safe_string(ptr, len)
 
       set_output(Astv::Core.lex_response(source))
     rescue ex

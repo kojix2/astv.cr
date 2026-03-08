@@ -746,7 +746,10 @@ end
 
     function nodeKind(typeName) {
       if (typeof typeName !== 'string') return 'other';
-      const t = typeName.toLowerCase();
+      const t = typeName
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+        .toLowerCase();
       const literal = new Set(['number_literal', 'string_literal', 'char_literal', 'symbol_literal', 'bool_literal', 'nil_literal', 'array_literal', 'hash_literal', 'regex_literal', 'tuple_literal', 'named_tuple_literal', 'range_literal']);
       const reference = new Set(['var', 'instance_var', 'class_var', 'global', 'path', 'self']);
       const call = new Set(['call', 'macro_expression', 'yield', 'proc_literal']);

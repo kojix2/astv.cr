@@ -68,49 +68,230 @@ module Astv
 
     private def macro_syntax?(source : String)
       # NOTE: Fast heuristic for fallback lexing.
-      # It intentionally does not parse %q/%Q literals or heredoc bodies.
+      # It intentionally handles only the main literal/comment forms needed to
+      # avoid falling back to macro lexing for unrelated lexer failures.
       in_double_quote = false
       in_single_quote = false
       in_line_comment = false
+      percent_literal_end = nil.as(Char?)
+      percent_literal_nested = false
+      percent_literal_depth = 0
+      heredoc_end = nil.as(String?)
       i = 0
 
       while i < source.bytesize
+        if heredoc_end
+          i, heredoc_end = advance_heredoc(source, i, heredoc_end)
+          next
+        end
+
         char = source.byte_at(i).unsafe_chr
 
         if in_line_comment
           in_line_comment = false if char == '\n'
+        elsif literal_end = percent_literal_end
+          i, percent_literal_end, percent_literal_nested, percent_literal_depth = advance_percent_literal(
+            source,
+            i,
+            char,
+            literal_end,
+            percent_literal_nested,
+            percent_literal_depth
+          )
         elsif in_double_quote
-          if char == '\\'
-            i += 1 if i + 1 < source.bytesize
-          elsif char == '"'
-            in_double_quote = false
-          end
+          i, in_double_quote = advance_quoted_literal(source, i, char, '"')
         elsif in_single_quote
-          if char == '\\'
-            i += 1 if i + 1 < source.bytesize
-          elsif char == '\''
-            in_single_quote = false
-          end
+          i, in_single_quote = advance_quoted_literal(source, i, char, '\'')
         else
-          case char
-          when '#'
-            in_line_comment = true
-          when '"'
-            in_double_quote = true
-          when '\''
-            in_single_quote = true
-          when '{'
-            if i + 1 < source.bytesize
-              nxt = source.byte_at(i + 1).unsafe_chr
-              return true if nxt == '{' || nxt == '%'
-            end
-          end
+          macro_found, i, in_line_comment, in_double_quote, in_single_quote, percent_literal_end, percent_literal_nested, percent_literal_depth, heredoc_end = advance_plain_context(
+            source,
+            i,
+            char,
+            in_line_comment,
+            in_double_quote,
+            in_single_quote,
+            percent_literal_end,
+            percent_literal_nested,
+            percent_literal_depth,
+            heredoc_end
+          )
+          return true if macro_found
         end
 
         i += 1
       end
 
       false
+    end
+
+    private def advance_heredoc(source : String, index : Int32, heredoc_end : String)
+      line_end = source.byte_index('\n'.ord.to_u8, index) || source.bytesize
+      line = source.byte_slice(index, line_end - index)
+      next_heredoc_end = line.lstrip == heredoc_end ? nil : heredoc_end
+      {line_end + 1, next_heredoc_end}
+    end
+
+    private def advance_percent_literal(source : String, index : Int32, char : Char, literal_end : Char, nested : Bool, depth : Int32)
+      next_index = index
+      next_end = literal_end.as(Char?)
+      next_nested = nested
+      next_depth = depth
+
+      if char == '\\'
+        next_index += 1 if next_index + 1 < source.bytesize
+      elsif nested && char == literal_end
+        next_depth -= 1
+        if next_depth <= 0
+          next_end = nil
+          next_nested = false
+        end
+      elsif nested
+        if opening = matching_delimiter(literal_end)
+          next_depth += 1 if char == opening
+        end
+      elsif char == literal_end
+        next_end = nil
+      end
+
+      {next_index, next_end, next_nested, next_depth}
+    end
+
+    private def advance_quoted_literal(source : String, index : Int32, char : Char, closing : Char)
+      next_index = index
+      still_open = true
+
+      if char == '\\'
+        next_index += 1 if next_index + 1 < source.bytesize
+      elsif char == closing
+        still_open = false
+      end
+
+      {next_index, still_open}
+    end
+
+    private def advance_plain_context(source : String, index : Int32, char : Char, in_line_comment : Bool, in_double_quote : Bool, in_single_quote : Bool, percent_literal_end : Char?, percent_literal_nested : Bool, percent_literal_depth : Int32, heredoc_end : String?)
+      macro_found = false
+      next_index = index
+      next_line_comment = in_line_comment
+      next_double_quote = in_double_quote
+      next_single_quote = in_single_quote
+      next_percent_literal_end = percent_literal_end
+      next_percent_literal_nested = percent_literal_nested
+      next_percent_literal_depth = percent_literal_depth
+      next_heredoc_end = heredoc_end
+
+      case char
+      when '#'
+        next_line_comment = true
+      when '"'
+        next_double_quote = true
+      when '\''
+        next_single_quote = true
+      when '%'
+        if literal = percent_literal(source, index)
+          next_percent_literal_end = literal[:end_char]
+          next_percent_literal_nested = literal[:nested]
+          next_percent_literal_depth = 1
+          next_index = literal[:next_index]
+        end
+      when '<'
+        if i = heredoc_start_index(source, index)
+          next_heredoc_end = heredoc_identifier(source, i)
+        end
+      when '{'
+        macro_found = macro_delimiter?(source, index)
+      end
+
+      {
+        macro_found,
+        next_index,
+        next_line_comment,
+        next_double_quote,
+        next_single_quote,
+        next_percent_literal_end,
+        next_percent_literal_nested,
+        next_percent_literal_depth,
+        next_heredoc_end,
+      }
+    end
+
+    private def macro_delimiter?(source : String, index : Int32)
+      return false unless index + 1 < source.bytesize
+
+      nxt = source.byte_at(index + 1).unsafe_chr
+      nxt == '{' || nxt == '%'
+    end
+
+    private def heredoc_start_index(source : String, index : Int32)
+      return unless index + 1 < source.bytesize
+      return unless source.byte_at(index + 1).unsafe_chr == '<'
+
+      index + 2
+    end
+
+    private def percent_literal(source : String, index : Int32)
+      cursor = index + 1
+      return nil if cursor >= source.bytesize
+
+      opener = source.byte_at(cursor).unsafe_chr
+      if opener.ascii_letter?
+        cursor += 1
+        return nil if cursor >= source.bytesize
+        opener = source.byte_at(cursor).unsafe_chr
+      end
+
+      closing = closing_delimiter(opener)
+      return nil unless closing
+
+      {end_char: closing, nested: closing != opener, next_index: cursor}
+    end
+
+    private def closing_delimiter(opener : Char)
+      case opener
+      when '('
+        ')'
+      when '['
+        ']'
+      when '{'
+        '}'
+      when '<'
+        '>'
+      else
+        opener
+      end
+    end
+
+    private def matching_delimiter(closing : Char)
+      case closing
+      when ')'
+        '('
+      when ']'
+        '['
+      when '}'
+        '{'
+      when '>'
+        '<'
+      end
+    end
+
+    private def heredoc_identifier(source : String, index : Int32)
+      cursor = index
+      return nil if cursor >= source.bytesize
+
+      if source.byte_at(cursor).unsafe_chr.in?('-', '~')
+        cursor += 1
+        return nil if cursor >= source.bytesize
+      end
+
+      start = cursor
+      while cursor < source.bytesize
+        char = source.byte_at(cursor).unsafe_chr
+        break unless char.alphanumeric? || char == '_'
+        cursor += 1
+      end
+
+      return nil if cursor == start
+      source.byte_slice(start, cursor - start)
     end
 
     def parse_response(source : String)

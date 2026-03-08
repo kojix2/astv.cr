@@ -52,5 +52,16 @@ describe Astv::Core do
       json["errors"].as_a.size.should eq(0)
       json["text"].as_s.includes?("MACRO_EXPRESSION_START").should be_false
     end
+
+    it "does not treat percent literals as macro syntax fallback" do
+      source = %q(%q({{)
+'ab'
+)
+      response = Astv::Core.lex_response(source)
+      json = JSON.parse(response)
+
+      json["errors"].as_a.size.should eq(1)
+      json["text"].as_s.includes?("MACRO_EXPRESSION_START").should be_false
+    end
   end
 end
