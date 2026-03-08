@@ -159,6 +159,37 @@
       padding-right: 8px;
     }
 
+    .token-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .token-table th,
+    .token-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    .token-table th {
+      position: sticky;
+      top: 0;
+      background: #f6f1e7;
+      z-index: 1;
+      font-weight: 700;
+    }
+
+    .token-table .num {
+      width: 72px;
+      white-space: nowrap;
+    }
+
     .column {
       display: flex;
       flex-direction: column;
@@ -560,6 +591,7 @@ end
     const rubyStatus = document.getElementById('rubyStatus');
 
     let currentLoc = null;
+    let lastTokenText = '';
 
     function typeOf(value) {
       if (value === null) return 'null';
@@ -852,6 +884,54 @@ end
       textView.textContent = message;
       jsonView.textContent = '';
       if (tokenView) tokenView.textContent = '';
+      lastTokenText = '';
+    }
+
+    function renderTokenTable(tokens) {
+      if (!tokenView) return;
+      if (!Array.isArray(tokens) || tokens.length === 0) {
+        tokenView.textContent = '';
+        return;
+      }
+
+      const columns = [
+        { key: 'line_number', label: 'Line', className: 'num' },
+        { key: 'column_number', label: 'Col', className: 'num' },
+        { key: 'type', label: 'Type' },
+        { key: 'value', label: 'Value' },
+        { key: 'raw', label: 'Raw' },
+      ];
+
+      const table = document.createElement('table');
+      table.className = 'token-table';
+
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      columns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col.label;
+        if (col.className) th.className = col.className;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+
+      const tbody = document.createElement('tbody');
+      tokens.forEach(token => {
+        const row = document.createElement('tr');
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          if (col.className) td.className = col.className;
+          const raw = token && Object.prototype.hasOwnProperty.call(token, col.key) ? token[col.key] : '';
+          td.textContent = raw === null || raw === undefined ? '' : String(raw);
+          row.appendChild(td);
+        });
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      tokenView.innerHTML = '';
+      tokenView.appendChild(table);
     }
 
     tabButtons.forEach(btn => {
@@ -910,7 +990,7 @@ end
     });
 
     copyTokenBtn.addEventListener('click', () => {
-      copyOutput(tokenView.textContent || '');
+      copyOutput(lastTokenText || tokenView.textContent || '');
     });
 
     expandAllBtn.addEventListener('click', () => {
@@ -998,7 +1078,10 @@ end
         if (tokenView) {
           try {
             const lexResult = await postJson('/api/lex', { code: source });
-            if (lexResult && lexResult.text) {
+            lastTokenText = lexResult && lexResult.text ? lexResult.text : '';
+            if (lexResult && Array.isArray(lexResult.tokens)) {
+              renderTokenTable(lexResult.tokens);
+            } else if (lexResult && lexResult.text) {
               tokenView.textContent = lexResult.text;
             } else if (lexResult && lexResult.errors && lexResult.errors.length > 0) {
               tokenView.textContent = lexResult.errors[0].message || 'Lex error';
@@ -1007,6 +1090,7 @@ end
             }
           } catch (lexErr) {
             const lexMessage = lexErr && lexErr.message ? lexErr.message : String(lexErr);
+            lastTokenText = '';
             if (lexMessage.includes('unreachable')) {
               tokenView.textContent = 'Tokens tab: lexer failed in WASM runtime for this input.';
             } else {
