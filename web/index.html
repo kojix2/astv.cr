@@ -714,18 +714,18 @@ end
       const canvas = getEditorMetrics._canvas || (getEditorMetrics._canvas = document.createElement('canvas'));
       const ctx = canvas.getContext('2d');
       ctx.font = font;
-      const charWidth = ctx.measureText('M').width;
       const lineHeight = parseFloat(style.lineHeight);
       const paddingLeft = parseFloat(style.paddingLeft) || 0;
       const paddingTop = parseFloat(style.paddingTop) || 0;
-      return { charWidth, lineHeight, paddingLeft, paddingTop };
+      const measure = (text) => ctx.measureText(text || '').width;
+      return { lineHeight, paddingLeft, paddingTop, measure };
     }
 
     function renderLocationHighlight(loc) {
       if (!rubyLocLayer) return;
       rubyLocLayer.innerHTML = '';
       if (!loc) return;
-      const { charWidth, lineHeight, paddingLeft, paddingTop } = getEditorMetrics();
+      const { lineHeight, paddingLeft, paddingTop, measure } = getEditorMetrics();
       const lines = rubyInput.value.split('\n');
       const startLine = Math.max(1, loc.startLine);
       const endLine = Math.max(startLine, loc.endLine);
@@ -734,8 +734,10 @@ end
         const startCol = line === startLine ? Math.max(1, loc.startColumn) : 1;
         const endColRaw = line === endLine ? Math.max(startCol, loc.endColumn) : text.length + 1;
         const endCol = Math.max(startCol, endColRaw);
-        const left = paddingLeft + (startCol - 1) * charWidth - rubyInput.scrollLeft;
-        const width = Math.max(2, (endCol - startCol) * charWidth);
+        const startIndex = Math.max(0, startCol - 1);
+        const endExclusive = Math.max(startIndex, endCol);
+        const left = paddingLeft + measure(text.slice(0, startIndex)) - rubyInput.scrollLeft;
+        const width = Math.max(2, measure(text.slice(startIndex, endExclusive)));
         const top = paddingTop + (line - 1) * lineHeight - rubyInput.scrollTop;
         const block = document.createElement('div');
         block.className = 'loc-block';
