@@ -1,30 +1,32 @@
 require "../src/astv/core"
+require "./wasm_helper"
+
+# ── App-specific WASM bindings ────────────────────────────────────────────────
+#
+# To create a new Crystal+WASM app from this template:
+#   1. Replace the `astv_` prefix throughout this file with your app name.
+#   2. Replace the contents of the AstvWasm module with your own logic.
+#   3. Add or remove `fun` exports to match what main.js expects.
+#
+# The WasmRuntime helpers (safe_string, set_output, alloc, free, last_len)
+# come from wasm_helper.cr and need no changes.
 
 module AstvWasm
   extend self
 
   MAX_INPUT_BYTES = 1_000_000
 
-  @@last_string = ""
-  @@last_bytes = Bytes.empty
-  @@last_len = 0
-
-  def last_len : Int32
-    @@last_len
-  end
-
   def parse(ptr : UInt8*, len : Int32) : Int32
     source = ""
     begin
       if len > MAX_INPUT_BYTES
-        return set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
+        return WasmRuntime.set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
       end
 
-      source = safe_string(ptr, len)
-
-      set_output(Astv::Core.parse_response(source))
+      source = WasmRuntime.safe_string(ptr, len)
+      WasmRuntime.set_output(Astv::Core.parse_response(source))
     rescue ex
-      set_output(Astv::Core.error_response(ex, source))
+      WasmRuntime.set_output(Astv::Core.error_response(ex, source))
     end
   end
 
@@ -32,51 +34,38 @@ module AstvWasm
     source = ""
     begin
       if len > MAX_INPUT_BYTES
-        return set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
+        return WasmRuntime.set_output(Astv::Core.error_response(RuntimeError.new("payload too large"), ""))
       end
 
-      source = safe_string(ptr, len)
-
-      set_output(Astv::Core.lex_response(source))
+      source = WasmRuntime.safe_string(ptr, len)
+      WasmRuntime.set_output(Astv::Core.lex_response(source))
     rescue ex
-      set_output(Astv::Core.error_response(ex, source))
+      WasmRuntime.set_output(Astv::Core.error_response(ex, source))
     end
   end
 
   def version : Int32
-    set_output(%({"crystal_version":"#{Crystal::VERSION}"}))
-  end
-
-  private def safe_string(ptr : UInt8*, len : Int32) : String
-    return "" if ptr.null? || len <= 0
-
-    String.new(ptr, len)
-  end
-
-  private def set_output(output : String) : Int32
-    @@last_string = output
-    @@last_bytes = output.to_slice
-    @@last_len = @@last_bytes.size
-    @@last_bytes.to_unsafe.address.to_i32
+    WasmRuntime.set_output(%({"crystal_version":"#{Crystal::VERSION}"}))
   end
 end
 
-lib LibC
-  fun malloc(size : SizeT) : Void*
-  fun free(ptr : Void*)
-end
+# ── Exported C functions ──────────────────────────────────────────────────────
+# Rename the `astv_` prefix to match your app name.
+# alloc / free / last_len are required by the JS loader (wasm-loader.js).
 
 fun astv_alloc(size : Int32) : UInt8*
-  return Pointer(UInt8).null if size <= 0
-
-  LibC.malloc(size).as(UInt8*)
+  WasmRuntime.alloc(size)
 end
 
 fun astv_free(ptr : UInt8*, size : Int32)
-  return if ptr.null?
-
-  LibC.free(ptr.as(Void*))
+  WasmRuntime.free(ptr)
 end
+
+fun astv_last_len : Int32
+  WasmRuntime.last_len
+end
+
+# App-specific exports — add/remove/rename to match your app's API.
 
 fun astv_parse(ptr : UInt8*, len : Int32) : Int32
   AstvWasm.parse(ptr, len)
@@ -84,10 +73,6 @@ end
 
 fun astv_lex(ptr : UInt8*, len : Int32) : Int32
   AstvWasm.lex(ptr, len)
-end
-
-fun astv_last_len : Int32
-  AstvWasm.last_len
 end
 
 fun astv_version : Int32
