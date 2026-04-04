@@ -8,7 +8,7 @@ WASM_SRC ?= wsm/astv_wasm.cr
 WASM_OUT ?= web/astv.wasm
 WASI_CACHE_DIR ?= .cache/wasm
 WASI_SYSROOT_DIR ?= $(WASI_CACHE_DIR)/wasm32-wasi-sysroot
-WASI_SYSROOT_URL ?= https://github.com/kojix2/wasm-libs/releases/download/v0.0.4/wasm32-wasi-sysroot.tar.gz
+WASI_SYSROOT_URL ?= https://github.com/kojix2/wasm-libs/releases/download/v0.0.5/wasm32-wasi-sysroot.tar.gz
 
 .PHONY: all build run demo wasm-deps wasm-build wasm-serve clean
 
