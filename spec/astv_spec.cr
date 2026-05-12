@@ -54,9 +54,7 @@ describe Astv::Core do
     end
 
     it "does not treat percent literals as macro syntax fallback" do
-      source = %q(%q({{)
-'ab'
-)
+      source = ["%q({{", "'ab'"].join("\n") + "\n"
       response = Astv::Core.lex_response(source)
       json = JSON.parse(response)
 

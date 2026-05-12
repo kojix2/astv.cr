@@ -35,8 +35,8 @@ module Astv
               macro_state = token.macro_state
               break if token.type == Crystal::Token::Kind::EOF
             end
-          rescue macro_ex
-            errors << {message: (macro_ex.message || macro_ex.class.name), kind: macro_ex.class.name}
+          rescue error
+            errors << {message: (error.message || error.class.name), kind: error.class.name}
           end
         else
           errors << {message: (ex.message || ex.class.name), kind: ex.class.name}
@@ -49,7 +49,7 @@ module Astv
           json.field "text", lines.join("\n")
           json.field "tokens" do
             json.array do
-              tokens.each { |t| write_token_json(json, t) }
+              tokens.each { |token| write_token_json(json, token) }
             end
           end
           json.field "errors" do
@@ -231,17 +231,17 @@ module Astv
 
     private def percent_literal(source : String, index : Int32)
       cursor = index + 1
-      return nil if cursor >= source.bytesize
+      return if cursor >= source.bytesize
 
       opener = source.byte_at(cursor).unsafe_chr
       if opener.ascii_letter?
         cursor += 1
-        return nil if cursor >= source.bytesize
+        return if cursor >= source.bytesize
         opener = source.byte_at(cursor).unsafe_chr
       end
 
       closing = closing_delimiter(opener)
-      return nil unless closing
+      return unless closing
 
       {end_char: closing, nested: closing != opener, next_index: cursor}
     end
@@ -276,11 +276,11 @@ module Astv
 
     private def heredoc_identifier(source : String, index : Int32)
       cursor = index
-      return nil if cursor >= source.bytesize
+      return if cursor >= source.bytesize
 
       if source.byte_at(cursor).unsafe_chr.in?('-', '~')
         cursor += 1
-        return nil if cursor >= source.bytesize
+        return if cursor >= source.bytesize
       end
 
       start = cursor
@@ -290,7 +290,7 @@ module Astv
         cursor += 1
       end
 
-      return nil if cursor == start
+      return if cursor == start
       source.byte_slice(start, cursor - start)
     end
 
@@ -372,7 +372,7 @@ module Astv
       end
     end
 
-    def write_location_json(json : JSON::Builder, start_loc : Crystal::Location, end_loc : Crystal::Location | Nil)
+    def write_location_json(json : JSON::Builder, start_loc : Crystal::Location, end_loc : Crystal::Location?)
       json.field "location" do
         json.object do
           json.field "start_line", start_loc.line_number
@@ -394,6 +394,7 @@ module Astv
       collector.nodes
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def representative_value(node : Crystal::ASTNode)
       case node
       when Crystal::Alias
@@ -606,4 +607,5 @@ module Astv
       end
     end
   end
+  # ameba:enable Metrics/CyclomaticComplexity
 end
