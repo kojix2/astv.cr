@@ -15,7 +15,6 @@
   <script type="module" src="./main.js"></script>
   <style>
     :root {
-      --bg: #f4f1ea;
       --panel: #ffffff;
       --ink: #1e1d1b;
       --accent: #d0552f;
@@ -26,14 +25,6 @@
       --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       --display: "Cormorant Garamond", "Georgia", serif;
       --sans: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-      --node-literal: #3567b1;
-      --node-reference: #7a3a9a;
-      --node-call: #0d7665;
-      --node-control: #b45309;
-      --node-decl: #9f1239;
-      --node-type: #1e6d3d;
-      --node-convert: #4c51bf;
-      --node-other: #475569;
     }
 
     * { box-sizing: border-box; }
@@ -78,12 +69,6 @@
       font-size: 32px;
       margin: 0;
       letter-spacing: 0.5px;
-    }
-
-    .sub {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0;
     }
 
     .panel {
@@ -313,16 +298,6 @@
       flex-wrap: wrap;
     }
 
-    select {
-      border: 1px solid var(--line);
-      background: #f6f1e7;
-      color: var(--ink);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
     button {
       border: none;
       background: var(--accent);
@@ -417,7 +392,6 @@
         0 0 0 2px color-mix(in srgb, var(--node-border, #cfc4b4) 35%, transparent);
     }
 
-    .node .type { color: var(--muted); font-size: 11px; }
     .node .value { color: #1f2a44; }
     .node .details { display: none; color: #2b2b2b; font-size: 12px; white-space: pre-line; }
 
@@ -662,17 +636,6 @@ end
         .filter(Boolean)
         .map(part => part[0].toUpperCase() + part.slice(1))
         .join('');
-    }
-
-    function hasNodeChildren(obj) {
-      return Object.keys(obj).some(key => {
-        if (key === 'value') return false;
-        const v = obj[key];
-        const t = typeOf(v);
-        if (t === 'array') return isArrayOfNodeObjects(v);
-        if (t === 'object') return isNodeObject(v);
-        return false;
-      });
     }
 
     function representativeValue(obj) {
