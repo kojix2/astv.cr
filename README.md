@@ -23,6 +23,12 @@ ruby -run -e httpd web -p 8000
 python -m http.server 8000 --directory web
 ```
 
+> [!NOTE]
+> Crystal's `wasm32` target compiles with no GC (`gc/none`), so the WASM
+> module never frees memory: each parse/lex call leaks its allocations and
+> the module's heap grows monotonically. This is intentionally left as-is —
+> it is harmless for typical use, and reloading the page resets everything.
+
 ## CLI (Linux)
 
 ```
