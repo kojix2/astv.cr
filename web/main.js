@@ -3,7 +3,7 @@
 // To create a new Crystal+WASM app from this template:
 //   1. Change the wasmUrl to point to your .wasm file.
 //   2. Replace the `astv_` prefix on all export names with your app name.
-//   3. Replace the postJson routing logic with your own API calls.
+//   3. Replace the parse/lex wrappers with your own API calls.
 //
 // The generic WASM loader lives in wasm-loader.js — no changes needed there.
 
@@ -35,17 +35,13 @@ async function initAstvWasm() {
     }
   }
 
-  function postJson(url, payload) {
-    const source =
-      payload && typeof payload.code === "string" ? payload.code : "";
-    if (url.includes("/api/parse")) {
-      return call(astv_parse, source);
-    }
-    if (url.includes("/api/lex")) {
-      return call(astv_lex, source);
-    }
-    throw new Error(`Unknown endpoint: ${url}`);
+  function parse(source) {
+    return call(astv_parse, typeof source === "string" ? source : "");
   }
 
-  return { postJson, crystalVersion };
+  function lex(source) {
+    return call(astv_lex, typeof source === "string" ? source : "");
+  }
+
+  return { parse, lex, crystalVersion };
 }

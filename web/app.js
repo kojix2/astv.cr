@@ -455,11 +455,11 @@ tree.addEventListener('mouseout', (event) => {
   renderLocationHighlight(null);
 });
 
-async function postJson(url, payload) {
+async function getWasm() {
   if (window.astvWasmReady) {
     const wasm = await window.astvWasmReady;
-    if (wasm && wasm.postJson) {
-      return wasm.postJson(url, payload);
+    if (wasm) {
+      return wasm;
     }
   }
   throw new Error('WASM not ready');
@@ -470,7 +470,8 @@ async function parseAndRender() {
   rubyActionStatus.textContent = 'Parsing...';
   rubyActionStatus.className = 'status';
   try {
-    const parseResult = await postJson('/api/parse', { code: source });
+    const wasm = await getWasm();
+    const parseResult = await wasm.parse(source);
 
     if (parseResult && parseResult.ast) {
       renderTree(parseResult.ast);
@@ -493,7 +494,7 @@ async function parseAndRender() {
 
     if (tokenView) {
       try {
-        const lexResult = await postJson('/api/lex', { code: source });
+        const lexResult = await wasm.lex(source);
         lastTokenText = lexResult && lexResult.text ? lexResult.text : '';
         if (lexResult && Array.isArray(lexResult.tokens)) {
           renderTokenTable(lexResult.tokens);
